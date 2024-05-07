@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  
+  redis:
+    container_name: movie_watch_redis
+    image: redis/redis-stack:latest
+    ports:
+      - "8390:6379"
+      - "8381:8001"
+    networks:
+      - movieWatch
+    profiles:
+      - dev
+
+  db:
+    container_name: movie_watch_db
+    image: "postgres:14.2"
+    environment:
+      POSTGRES_USER: movie_watch
+      POSTGRES_PASSWORD: movie_watch
+      POSTGRES_DB: movie_watch
+    ports:
+      - "8441:5432"
+    networks:
+      - movieWatch
+    profiles:
+      - dev
+networks:
+  free:
