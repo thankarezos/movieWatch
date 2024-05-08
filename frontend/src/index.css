@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&display=swap');
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+ 
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -66,3 +69,39 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+/* ------------------------------------ Background ------------------------------------ */
+
+.bg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  /* background-color: red; */
+  filter: blur(1px) grayscale(10%) brightness(0.4);
+  overflow: hidden;
+  z-index: -100;
+}
+
+.bg-image {
+  width: 100%;
+}
+
+/* ------------------------------------ Main ------------------------------------ */
+
+.title {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -30px;
+  font-family: 'Jaro','Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 4rem;
+  text-shadow: 2px 2px 5px rgba(219, 0, 0, 0.815);
+}
+
+
+
+/* ------------------------------------ Main ------------------------------------ */
+
