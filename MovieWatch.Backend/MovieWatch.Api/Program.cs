@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieWatch.Services.Extensions;
@@ -6,6 +7,8 @@ using MovieWatch.Services.Services;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using MovieWatch.Data.Models;
+using FluentValidation;
+using MovieWatch.Data.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +42,8 @@ builder.Services.AddControllers()
 
 builder.Services.AddTransient<IWeatherService, WeatherService>();
 
-
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+ValidatorOptions.Global.PropertyNameResolver = CamelCasePropertyNameResolver.ResolvePropertyName;
 
 var app = builder.Build();
 
