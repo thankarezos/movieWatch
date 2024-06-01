@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using StackExchange.Redis;
 using MovieWatch.Data.Models;
 using FluentValidation;
+using MovieWatch.Api.Filters;
+using MovieWatch.Data.Configurations;
 using MovieWatch.Data.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,7 +34,10 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<ExceptionFilter>();
+    })
     .AddNewtonsoftJson(options =>
     {
         options.SerializerSettings.ContractResolver = BaseFirstContractResolver.Instance;
@@ -40,9 +45,16 @@ builder.Services.AddControllers()
         options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
     });
 
-builder.Services.AddTransient<IWeatherService, WeatherService>();
-
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+builder.Services.AddTransient<IWeatherService, WeatherService>();
+builder.Services.AddTransient<IMovieService, MovieService>();
+builder.Services.AddTransient<ITmdbService, TmdbService>();
+builder.Services.AddScoped<IValidationService, ValidationService>();
+
+builder.Services.Configure<TmbdConfiguration>(builder.Configuration.GetSection("Tmdb"));
+
+
 ValidatorOptions.Global.PropertyNameResolver = CamelCasePropertyNameResolver.ResolvePropertyName;
 
 var app = builder.Build();
