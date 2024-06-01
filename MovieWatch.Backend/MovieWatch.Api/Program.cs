@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,8 @@ using Newtonsoft.Json;
 using StackExchange.Redis;
 using MovieWatch.Data.Models;
 using FluentValidation;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http;
 using MovieWatch.Api.Filters;
 using MovieWatch.Data.Configurations;
 using MovieWatch.Data.Extensions;
@@ -51,6 +54,14 @@ builder.Services.AddTransient<IWeatherService, WeatherService>();
 builder.Services.AddTransient<IMovieService, MovieService>();
 builder.Services.AddTransient<ITmdbService, TmdbService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
+builder.Services.AddTransient<ITmdbServiceRedis, TmdbServiceRedis>();
+
+//configure http client factory
+builder.Services.AddHttpClient("TmdbClient", client =>
+{
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+});
+builder.Services.RemoveAll<IHttpMessageHandlerBuilderFilter>();
 
 builder.Services.Configure<TmbdConfiguration>(builder.Configuration.GetSection("Tmdb"));
 

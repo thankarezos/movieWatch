@@ -12,11 +12,6 @@ public class GetMoviesValidator : AbstractValidator<GetMoviesPld>
 
         RuleFor(x => x.Page)
             .GreaterThan(0)
-            .MustAsync(async (page, cancellationToken) =>
-            {
-                var (pageCount, _, _) = await tmdbService.GetDiscoverMoviesInfo();
-                return page <= pageCount;
-            })
             .WithMessage("Page number is too high");
     }
     

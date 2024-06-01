@@ -4,7 +4,7 @@ namespace MovieWatch.Services.Services;
 
 public interface IMovieService
 {
-    Task<IEnumerable<MovieDto>> GetMovies(int page = 1);
+    Task<MoviesDto?> GetMovies(int page = 1, bool verbose = false);
     
 }
 
@@ -17,9 +17,10 @@ public class MovieService : IMovieService
         _tmdbService = tmdbService;
     }
     
-    public async Task<IEnumerable<MovieDto>> GetMovies(int page = 1)
+    public async Task<MoviesDto?> GetMovies(int page = 1, bool verbose = false)
     {
-        return await _tmdbService.DiscoverMovies(page);
+        //get movies from redis hash paginated
+        throw new NotImplementedException();
        
     }
     
