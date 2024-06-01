@@ -3,6 +3,7 @@ using MovieWatch.Data.Dtos;
 using MovieWatch.Data.Dtos.MovieDtos;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using NRediSearch;
 
 namespace MovieWatch.Services.Services;
 
@@ -11,9 +12,8 @@ public interface ITmdbServiceRedis
     Task AddMoviesToRedisSortedSet(int fromPage, int toPage, CancellationToken cancellationToken = default);
     Task<MoviesFullDto> GetPaginatedMoviesFromSortedSetAsync(int page, int pageSize);
     Task SaveGenresToRedis();
-    Task<IEnumerable<GenreDto>> GetGenresFromRedis();
-    Task<(int pageCount, int totalMovies)> GetDiscoverMoviesInfo(int moviesPerPage);
-    
+    Task IndexMoviesInRediSearch();
+    Task<MoviesFullDto> SearchMoviesByTitleAsync(string titleFilter, int page, int pageSize);
 }
 
 public class TmdbServiceRedis : ITmdbServiceRedis
@@ -55,6 +55,7 @@ public class TmdbServiceRedis : ITmdbServiceRedis
     public async Task AddMoviesToRedisSortedSet(int fromPage, int toPage, CancellationToken cancellationToken = default)
     {
         var sortedSetKey = "movies_sorted";
+        var hashKey = "movies_hash";
         var db = _connectionMultiplexer.GetDatabase();
         int delay = 1000; // Start with 1 second delay
 
@@ -70,22 +71,24 @@ public class TmdbServiceRedis : ITmdbServiceRedis
 
                 foreach (var movie in movies)
                 {
+                    var movieId = movie.Id.ToString();
                     var popularity = movie.Popularity;
                     var movieJson = JsonConvert.SerializeObject(movie);
-                    await db.SortedSetAddAsync(sortedSetKey, movieJson, popularity);
+                    await db.HashSetAsync(hashKey, movieId, movieJson);
+                    await db.SortedSetAddAsync(sortedSetKey, movieId, popularity);
                 }
 
                 // Reset delay after a successful request
                 delay = 1000;
 
                 // Introduce a delay to avoid hitting the rate limit
-                await Task.Delay(100); // 100ms delay between each request
+                await Task.Delay(100, cancellationToken); // 100ms delay between each request
             }
             catch (Exception ex) when (ex.Message.Contains("429"))
             {
                 // Handle rate limiting (429 Too Many Requests)
                 _logger.LogWarning("Rate limit hit, backing off for {Delay} ms", delay);
-                await Task.Delay(delay);
+                await Task.Delay(delay, cancellationToken);
                 delay *= 2; // Exponential backoff
             }
             catch (Exception ex)
@@ -105,7 +108,9 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         var start = (page - 1) * pageSize;
         var stop = start + pageSize - 1;
 
-        var moviesJson = await db.SortedSetRangeByRankAsync(sortedSetKey, start, stop, Order.Descending);
+        var moviesJsonIds = await db.SortedSetRangeByRankAsync(sortedSetKey, start, stop, Order.Descending);
+        //get movie jsons from hash
+        var moviesJson = await db.HashGetAsync("movies_hash", moviesJsonIds.Select(x => x).ToArray());
         
         var movieSimpleDtoList = moviesJson.Select(movieJson => JsonConvert.DeserializeObject<MovieSimpleDto>(movieJson!)).ToList();
         
@@ -125,15 +130,84 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         
         return moviesFullDto;
     }
-    
-    public async Task<(int pageCount, int totalMovies)> GetDiscoverMoviesInfo(int moviesPerPage)
+
+    public async Task<MoviesFullDto> SearchMoviesByTitleAsync(string titleFilter, int page, int pageSize)
     {
         var db = _connectionMultiplexer.GetDatabase();
-        var sortedSetKey = "movies_sorted";
+        var indexName = "movies_index";
+        var client = new Client(indexName, db);
+
+        // Build the search query
+        var query = new Query($"@title:{titleFilter}*")
+            .Limit((page - 1) * pageSize, pageSize);
+
+        // Execute the search query
+        var result = await client.SearchAsync(query);
+
+        // Get the movie IDs from the search result
+        var movieIds = result.Documents.Select(document => document.Id.Replace("movie:", "")).ToList();
+
+        // Fetch movie data from the sorted set using the IDs
+        var moviesJson = new List<RedisValue>();
+
+        foreach (var movieId in movieIds)
+        {
+            var movieJson = await db.HashGetAsync("movies_hash", movieId);
+            if (movieJson.HasValue)
+            {
+                moviesJson.Add(movieJson);
+            }
+        }
+
+        // Deserialize movies
+        var movieSimpleDtoList = moviesJson
+            .Select(movieJson => JsonConvert.DeserializeObject<MovieSimpleDto>(movieJson!))
+            .Where(movie => movie != null)
+            .ToList();
+
+        // Fetch genres from Redis
+        var genres = await GetGenresFromRedis();
+
+        // Convert to MovieFullDto
+        var movieFullDtoList = movieSimpleDtoList
+            .Select(movieSimpleDto => new MovieFullDto(movieSimpleDto!, genres))
+            .ToList();
+
+        // Create MoviesFullDto
+        var moviesFullDto = new MoviesFullDto
+        {
+            Movies = movieFullDtoList,
+            Page = page,
+            TotalPages = Convert.ToInt32(Math.Ceiling(result.TotalResults / (double)pageSize)),
+            TotalResults = Convert.ToInt32(result.TotalResults)
+        };
+
+        return moviesFullDto;
+    }
+    
+    
+    public async Task IndexMoviesInRediSearch()
+    {
+        var db = _connectionMultiplexer.GetDatabase();
+        var indexName = "movies_index";
         
-        var pageCount = Convert.ToInt32(Math.Ceiling(await db.SortedSetLengthAsync(sortedSetKey) / (double) moviesPerPage));
-        var totalMovies = Convert.ToInt32(await db.SortedSetLengthAsync(sortedSetKey));
+        var moviesJson = await db.HashGetAsync("movies_hash", db.HashKeys("movies_hash"));
         
-        return (pageCount, totalMovies);
+        var movies = moviesJson.Select(movieJson => JsonConvert.DeserializeObject<MovieSimpleDto>(movieJson!)).ToList();
+        
+        var client = new Client(indexName, db);
+
+        var schema = new Schema()
+            .AddTextField("title");
+        
+        client.CreateIndex(schema, new Client.ConfiguredIndexOptions());
+        
+        foreach (var movie in movies)
+        {
+            if (movie == null) continue;
+            var doc = new Document($"movie:{movie.Id}");
+            doc.Set("title", movie.Title);
+            client.AddDocument(doc);
+        }
     }
 }

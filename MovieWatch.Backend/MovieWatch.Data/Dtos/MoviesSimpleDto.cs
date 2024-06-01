@@ -8,8 +8,11 @@ public class MoviesStringSimpleDto : MoviesDto
     public List<MovieStringSimpleDto>? Movies { get; set; }
     
     
-    public MoviesStringSimpleDto(MoviesFullDto moviesFullDto)
+    public MoviesStringSimpleDto(MoviesFullDto moviesFullDto, string imageBaseUrl)
     {
-        Movies = moviesFullDto.Movies?.Select(movie => new MovieStringSimpleDto(movie)).ToList();
+        Movies = moviesFullDto.Movies?.Select(m => new MovieStringSimpleDto(m, imageBaseUrl)).ToList();
+        TotalPages = moviesFullDto.TotalPages;
+        TotalResults = moviesFullDto.TotalResults;
+        Page = moviesFullDto.Page;
     }
 }
