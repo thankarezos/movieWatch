@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using MovieWatch.Data.Configurations;
 using MovieWatch.Data.Dtos;
+using MovieWatch.Data.Dtos.MovieDtos;
 using Newtonsoft.Json;
 using RestSharp;
 
@@ -9,7 +10,7 @@ namespace MovieWatch.Services.Services;
 public interface ITmdbService
 {
     // Task<MoviesDto?> DiscoverMovies(int page = 1, bool verbose = false);
-    Task<IEnumerable<MovieDto>?> DiscoverMovies(int page = 1);
+    Task<IEnumerable<MovieSimpleDto>?> DiscoverMovies(int page = 1);
     Task<List<GenreDto>?> GetGenres();
     Task<IEnumerable<string?>?> GetTrailers(int movieId);
     Task<(int pageCount, int totalMovies, int moviesPerPage)> GetDiscoverMoviesInfo();
@@ -25,7 +26,7 @@ public class TmdbService : ITmdbService
         _tmdbConfiguration = tmdbConfiguration;
     }
 
-    public async Task<IEnumerable<MovieDto>?> DiscoverMovies(int page = 1)
+    public async Task<IEnumerable<MovieSimpleDto>?> DiscoverMovies(int page = 1)
     {
         var baseUrl = _tmdbConfiguration.CurrentValue.BaseUrl;
         var apiKey = _tmdbConfiguration.CurrentValue.ApiKey;
@@ -38,13 +39,13 @@ public class TmdbService : ITmdbService
         request.AddHeader("accept", "application/json");
         request.AddHeader("Authorization", $"Bearer {apiKey}");
         var response = await client.GetAsync(request);
-        if (response.Content == null) return new List<MovieDto>();
+        if (response.Content == null) return new List<MovieSimpleDto>();
         
         var genres = await GetGenres();
 
         var tmdbDiscoverResponse = JsonConvert.DeserializeObject<TmdbDiscoverDto>(response.Content);
         
-        return tmdbDiscoverResponse?.Results?.Select(x => new MovieFullDto()
+        return tmdbDiscoverResponse?.Results?.Select(x => new MovieSimpleDto()
         {
             Id = x.Id,
             Title = x.Title,
@@ -53,7 +54,8 @@ public class TmdbService : ITmdbService
             Rating = Math.Round(x.VoteAverage, 1),
             Description = x.Overview,
             ImageUrl = x.PosterPath,
-            BannerUrl = x.BackdropPath
+            BannerUrl = x.BackdropPath,
+            Popularity = x.Popularity,
         });
 
     }

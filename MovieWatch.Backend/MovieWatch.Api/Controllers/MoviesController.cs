@@ -22,20 +22,20 @@ public class MoviesController
     }
 
     [HttpGet(Name = "GetMovies")]
-    public async Task<ApiResponse<MoviesDto>?> Get([FromQuery] GetMoviesPld pld)
+    public async Task<ApiResponse<MoviesStringSimpleDto>?> Get([FromQuery] GetMoviesPld pld)
     {
-        var validationResult = await _validationService.ValidatePldAsync<GetMoviesPld, MoviesDto>(pld);
+        var validationResult = await _validationService.ValidatePldAsync<GetMoviesPld, MoviesStringSimpleDto>(pld);
         if (validationResult != null) return validationResult;
-        var movies = await _movieService.GetMovies(pld.Page, pld.Verbose);
-        return new ApiResponse<MoviesDto>(movies);
+        var movies = await _movieService.GetMovies(pld.Page, pld.PageSize);
+        return new ApiResponse<MoviesStringSimpleDto>(movies);
 
     }
     
     [HttpGet("Index")]
-    public async Task<ApiResponse<MoviesDto>?> Index([FromQuery] int fromPage, [FromQuery] int toPage)
+    public async Task<ApiResponse<MoviesDto>?> Index([FromQuery] int fromPage, [FromQuery] int toPage, CancellationToken cancellationToken)
     {
         await _tmdbServiceRedis.SaveGenresToRedis();
-        await _tmdbServiceRedis.AddMoviesToRedis(fromPage, toPage);
+        await _tmdbServiceRedis.AddMoviesToRedisSortedSet(fromPage, toPage, cancellationToken);
         return new ApiResponse<MoviesDto>();
     }
 }

@@ -4,24 +4,22 @@ namespace MovieWatch.Services.Services;
 
 public interface IMovieService
 {
-    Task<MoviesDto?> GetMovies(int page = 1, bool verbose = false);
+    Task<MoviesStringSimpleDto?> GetMovies(int page = 1, int pageSize = 20);
     
 }
 
 public class MovieService : IMovieService
 {
-    private readonly ITmdbService _tmdbService;
+    private readonly ITmdbServiceRedis _tmdbServiceRedis;
     
-    public MovieService(ITmdbService tmdbService)
+    public MovieService(ITmdbServiceRedis tmdbServiceRedis)
     {
-        _tmdbService = tmdbService;
+        _tmdbServiceRedis = tmdbServiceRedis;
     }
     
-    public async Task<MoviesDto?> GetMovies(int page = 1, bool verbose = false)
+    public async Task<MoviesStringSimpleDto?> GetMovies(int page = 1, int pageSize = 20)
     {
-        //get movies from redis hash paginated
-        throw new NotImplementedException();
-       
+       return new MoviesStringSimpleDto(await _tmdbServiceRedis.GetPaginatedMoviesFromSortedSetAsync(page, pageSize));
     }
     
 }
