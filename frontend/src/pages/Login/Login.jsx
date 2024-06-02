@@ -2,7 +2,7 @@ import { useEffect} from "react";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Form, Input, message, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
-// import apiService from '../../ApiService';
+import apiService from '../../ApiService';
 
 
 const Login = () => {
@@ -24,7 +24,7 @@ const Login = () => {
           content: 'Successfully logged in',
         });
         console.log(response.data.token);
-        navigate("/");
+        navigate("/home");
       } catch (error) {
         //check if error is 400
         console.log(error.response)
@@ -45,7 +45,7 @@ const Login = () => {
     };
   
     return (
-      <div style={{height: "fit-content", width: "fit-content", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", width: "100vw"}}>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", width: "100vw"}}>
         <p className="title">MovieMatch</p>
         <Typography.Title style={{marginBottom: "40px", color: "white"}}>Login</Typography.Title>
           <Form
