@@ -19,7 +19,7 @@ public class MovieWatchDbContext : DbContext
         _schema = configuration.GetConnectionString(name: "Schema");
     }
     
-    public DbSet<WeatherForecast> WeatherForecasts { get; set; }
+    public DbSet<User> Users { get; set; } 
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

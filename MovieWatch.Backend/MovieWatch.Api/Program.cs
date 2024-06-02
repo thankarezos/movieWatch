@@ -50,12 +50,14 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-builder.Services.AddTransient<IWeatherService, WeatherService>();
 builder.Services.AddTransient<IMovieService, MovieService>();
 builder.Services.AddTransient<ITmdbService, TmdbService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddTransient<ITmdbServiceRedis, TmdbServiceRedis>();
 builder.Services.AddTransient<IPythonService, PythonService>();
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IJwtService, JwtService>();
+builder.Services.AddTransient<DataSeeder>();
 
 //configure http client factory
 builder.Services.AddHttpClient("TmdbClient", client =>
@@ -66,6 +68,7 @@ builder.Services.RemoveAll<IHttpMessageHandlerBuilderFilter>();
 
 builder.Services.Configure<TmbdConfiguration>(builder.Configuration.GetSection("Tmdb"));
 builder.Services.Configure<PyhtonConfiguration>(builder.Configuration.GetSection("Python"));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
 
 ValidatorOptions.Global.PropertyNameResolver = CamelCasePropertyNameResolver.ResolvePropertyName;
@@ -77,17 +80,20 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    
+    using var scope = app.Services.CreateScope();
+    var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    await dataSeeder.Seed();
+}
 
-    // Add row to the database
-    // using var scope = app.Services.CreateScope();
-    // var dbContext = scope.ServiceProvider.GetRequiredService<MovieWatchDbContext>();
-    // dbContext.WeatherForecasts.Add(new WeatherForecast
-    // {
-    //     TemperatureC = 20,
-    //     Summary = "Sunny"
-    // });
-    //
-    // await dbContext.SaveChangesAsync();
+if (!app.Environment.IsDevelopment())
+{
+    //migration
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<MovieWatchDbContext>();
+    await dbContext.Database.MigrateAsync();
+    
+
 }
 
 app.UseHttpsRedirection();
