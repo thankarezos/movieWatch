@@ -220,9 +220,8 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         }
         
         
-        foreach (var movie in movies)
+        foreach (var movie in movies.OfType<MovieSimpleDto>())
         {
-            if (movie == null) continue;
             //if document already exists do not add it again
             if (await client.GetDocumentAsync($"movie:{movie.Id}") != null) continue;
             
