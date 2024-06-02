@@ -18,11 +18,11 @@
 
 a {
   font-weight: 500;
-  color: #a9aeff;
+  color: #ffa9a9;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #f25353;
 }
 
 body {
@@ -119,7 +119,7 @@ button:focus-visible {
   background-color: #1a1a1a;
 }
 
-/* ------------------------------------ Pagination ------------------------------------ */
+/* ------------------------------------ Misc ------------------------------------ */
 
 
 
@@ -132,6 +132,22 @@ button:focus-visible {
 .ant-spin-dot i {
   background-color: rgb(255, 0, 0) !important; /* Using !important to override default styles */
 }
+
+.fav-btn {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    font-size: 25px;
+    color: pink;
+    cursor: pointer;
+    transition: box-shadow 0.1s linear;
+}
+
+.fav-btn:hover {
+  box-shadow: 1px 1px 10px 1px rgba(255, 255, 255, 0.247), 1px 1px 10px 2px rgba(0, 0, 0, 0.205);
+  transition: box-shadow 0.2s linear;
+}
+
 
 
 /* ------------------------------------ Card ------------------------------------ */

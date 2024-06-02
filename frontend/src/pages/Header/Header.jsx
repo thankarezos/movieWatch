@@ -14,7 +14,7 @@ function Title() {
         <p className="title">MovieMatch</p>
 
         <Avatar
-          onClick={() => {isLoggedin ? navigate("/home") : navigate("/")}}
+          onClick={() => {isLoggedin ? navigate("/home") : navigate("/profile")}}
           icon={<UserOutlined />}
           // src="https://api.dicebear.com/7.x/miniavs/svg?seed=1"
           style={{

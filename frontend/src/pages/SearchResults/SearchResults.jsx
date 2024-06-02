@@ -80,6 +80,11 @@ const SearchMovies = ({setIsDone}) => {
     };
 
     const buttonHandler = () => {
+        const countChecked = movies.filter(movie => movie.isChecked).length;
+        if (countChecked < 5) {
+            alert("You need to choose 5 movies!");
+            return; // Prevent checking more than 5
+        }
         setIsDone(true);
     }
 
