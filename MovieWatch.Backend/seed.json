@@ -5,7 +5,15 @@
         "Id": 1,
         "Username": "thankarezos",
         "Password": "123456",
-        "Email": "thankarezos@gmail.com"
+        "Email": "thankarezos@gmail.com",
+        "UserType": "Admin"
+      },
+      {
+        "Id": 2,
+        "Username": "user",
+        "Password": "123456",
+        "Email": "users@gmail.com",
+        "UserType": "User"
       }
     ]
 }

@@ -26,26 +26,37 @@ public class UserService : IUserService
     
     public async Task<(string? token, User? user)> Login(string username, string password)
     {
-        //check if user exists
-        var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username && x.Password == password);
-        
+        // Retrieve the user by username
+        var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
+    
         if (user == null)
         {
             return (null, null);
         }
-        
+    
+        // Verify the password using bcrypt
+        if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
+        {
+            return (null, null);
+        }
+    
+        // Generate a JWT token if the password is correct
         var token = await _jwtService.GenerateJwtToken(user.Id);
-        
+    
         return (token, user);
-        
     }
     
     public async Task<(string? token, User? user)> Register(RegisterPld registerPld)
     {
+        
+        //hash password
+        
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerPld.Password);
+        
         var user = new User
         {
             Username = registerPld.Username,
-            Password = registerPld.Password,
+            Password = hashedPassword,
             Email = registerPld.Email
         };
         
