@@ -55,6 +55,7 @@ builder.Services.AddTransient<IMovieService, MovieService>();
 builder.Services.AddTransient<ITmdbService, TmdbService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddTransient<ITmdbServiceRedis, TmdbServiceRedis>();
+builder.Services.AddTransient<IPythonService, PythonService>();
 
 //configure http client factory
 builder.Services.AddHttpClient("TmdbClient", client =>
@@ -64,6 +65,7 @@ builder.Services.AddHttpClient("TmdbClient", client =>
 builder.Services.RemoveAll<IHttpMessageHandlerBuilderFilter>();
 
 builder.Services.Configure<TmbdConfiguration>(builder.Configuration.GetSection("Tmdb"));
+builder.Services.Configure<PyhtonConfiguration>(builder.Configuration.GetSection("Python"));
 
 
 ValidatorOptions.Global.PropertyNameResolver = CamelCasePropertyNameResolver.ResolvePropertyName;

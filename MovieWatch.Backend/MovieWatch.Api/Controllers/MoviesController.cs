@@ -13,12 +13,14 @@ public class MoviesController
     private readonly IMovieService _movieService;
     private readonly IValidationService _validationService;
     private readonly ITmdbServiceRedis _tmdbServiceRedis;
+    private readonly IPythonService _pythonService;
     
-    public MoviesController(IMovieService movieService, IValidationService validationService, ITmdbServiceRedis tmdbServiceRedis)
+    public MoviesController(IMovieService movieService, IValidationService validationService, ITmdbServiceRedis tmdbServiceRedis, IPythonService pythonService)
     {
         _movieService = movieService;
         _validationService = validationService;
         _tmdbServiceRedis = tmdbServiceRedis;
+        _pythonService = pythonService;
     }
 
     [HttpGet(Name = "GetMovies")]
@@ -38,6 +40,14 @@ public class MoviesController
     }
     
     
+    [HttpGet("Csv")]
+    public async Task<ApiResponse> Csv()
+    {
+        await _tmdbServiceRedis.GenerateCsvFromRedisHash("movies.csv");
+        return new ApiResponse();
+    }
+    
+    
     [HttpGet("FetchMoviesFromTmdb")]
     public async Task<ApiResponse> FetchMovies([FromQuery] int fromPage, [FromQuery] int toPage, CancellationToken cancellationToken)
     {
@@ -50,6 +60,15 @@ public class MoviesController
     public async Task<ApiResponse> Index()
     {
         await _tmdbServiceRedis.IndexMoviesInRediSearch();
+        return new ApiResponse();
+    }
+    
+    [HttpGet("Python")]
+    public async Task<ApiResponse> Python(CancellationToken cancellationToken)
+    {
+        await _tmdbServiceRedis.GenerateCsvFromRedisHash("movies.csv");
+        await _pythonService.RunScript(cancellationToken);
+        await _tmdbServiceRedis.SaveJsonToRedisHash();
         return new ApiResponse();
     }
 }

@@ -1,4 +1,8 @@
+using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MovieWatch.Data.Configurations;
 using MovieWatch.Data.Dtos;
 using MovieWatch.Data.Dtos.MovieDtos;
 using Newtonsoft.Json;
@@ -14,19 +18,23 @@ public interface ITmdbServiceRedis
     Task SaveGenresToRedis();
     Task IndexMoviesInRediSearch();
     Task<MoviesFullDto> SearchMoviesByTitleAsync(string titleFilter, int page, int pageSize);
+    Task GenerateCsvFromRedisHash(string fileName);
+    Task SaveJsonToRedisHash();
 }
 
 public class TmdbServiceRedis : ITmdbServiceRedis
 {
     private readonly IConnectionMultiplexer _connectionMultiplexer;
     private readonly ITmdbService _tmdbService;
+    private readonly IOptionsMonitor<PyhtonConfiguration> _pyhtonConfiguration;
     private readonly ILogger<TmdbServiceRedis> _logger;
 
-    public TmdbServiceRedis(IConnectionMultiplexer connectionMultiplexer, ITmdbService tmdbService, ILogger<TmdbServiceRedis> logger)
+    public TmdbServiceRedis(IConnectionMultiplexer connectionMultiplexer, ITmdbService tmdbService, ILogger<TmdbServiceRedis> logger, IOptionsMonitor<PyhtonConfiguration> pyhtonConfiguration)
     {
         _connectionMultiplexer = connectionMultiplexer;
         _tmdbService = tmdbService;
         _logger = logger;
+        _pyhtonConfiguration = pyhtonConfiguration;
     }
     
     public async Task SaveGenresToRedis()
@@ -228,6 +236,70 @@ public class TmdbServiceRedis : ITmdbServiceRedis
             var doc = new Document($"movie:{movie.Id}");
             doc.Set("title", movie.Title.ToLower());
             await client.AddDocumentAsync(doc);
+        }
+    }
+    
+    public async Task GenerateCsvFromRedisHash(string fileName)
+    {
+        var db = _connectionMultiplexer.GetDatabase();
+        var hashKey = "movies_hash";
+        
+        // Retrieve all hash entries
+        var hashEntries = await db.HashGetAllAsync(hashKey);
+        var movies = hashEntries
+            .Select(entry => JsonConvert.DeserializeObject<MovieSimpleDto>(entry.Value))
+            .ToList();
+        var genres = await GetGenresFromRedis();
+        
+        // Convert to MovieFullDto
+        var moviesFull = movies
+            .Select(movie => new MovieFullDto(movie, genres))
+            .ToList();
+        
+        //write only id, title, description, genres
+        
+        var moviesSimpleCsv = moviesFull
+            .Select(movie => new MovieSimpleCsvDto
+            {
+                Id = movie.Id,
+                Title = movie.Title,
+                Description = movie.Description,
+                Genres = string.Join(", ", movie.Genres?.Select(genre => genre.Name)!)
+            })
+            .ToList();
+        
+        var storagePath = _pyhtonConfiguration.CurrentValue.Storage;
+        var storageRealPath = Path.GetFullPath(storagePath);
+        // Write data to CSV
+        await using (var writer = new StreamWriter(Path.Combine(storageRealPath, fileName)))
+        {
+            await using (var csv = new CsvWriter(writer,
+                             new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)))
+            {
+                await csv.WriteRecordsAsync(moviesSimpleCsv);
+            }
+        }
+
+        _logger.LogInformation("CSV file generated successfully: {FileName}", fileName);
+    }
+    
+    public async Task SaveJsonToRedisHash()
+    {
+        var storagePat = Path.GetFullPath( _pyhtonConfiguration.CurrentValue.Storage);
+        
+        var key = "recommendations";
+        var db = _connectionMultiplexer.GetDatabase();
+        
+        var json = await File.ReadAllTextAsync(Path.Combine(storagePat, "movies.json"));
+        
+        var data = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, double>>>(json);
+        
+        foreach (var (movieId, recommendations) in data!)
+        {
+            var movieKey = movieId;
+            //get only recommendation keys
+            var movieJson = JsonConvert.SerializeObject(recommendations.Keys);
+            await db.HashSetAsync(key, movieKey, movieJson);
         }
     }
 }

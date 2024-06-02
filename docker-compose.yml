@@ -8,8 +8,12 @@ services:
       - "8381:8001"
     networks:
       - movieWatch
+    volumes:
+      - ./redis-data/:/data
     profiles:
       - dev
+    environment:
+      REDIS_ARGS: "--save 60 1000 --appendonly yes"
 
   db:
     container_name: movie_watch_db
