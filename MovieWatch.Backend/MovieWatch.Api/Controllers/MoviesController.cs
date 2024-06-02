@@ -97,11 +97,19 @@ public class MoviesController : ControllerBase
         return new ApiResponse();
     }
     
-    [Authorization(UserType.Admin)]
     [HttpGet("Reco/{id}")]
     public async Task<ApiResponse<List<MovieStringSimpleDto>>> Reco(int id)
     {
         var movies = await _tmdbServiceRedis.GetRecommendations(id);
+        return new ApiResponse<List<MovieStringSimpleDto>>(movies);
+    }
+    
+    [HttpGet("RecoMultiple")]
+    public async Task<ApiResponse<List<MovieStringSimpleDto>>> RecoMultiple([FromQuery] string ids)
+    {
+        var separated = ids.Split(new char[] { ',' });
+        var idsList = separated.Select(int.Parse).ToList();
+        var movies = await _tmdbServiceRedis.GetRecommendations(idsList);
         return new ApiResponse<List<MovieStringSimpleDto>>(movies);
     }
 }

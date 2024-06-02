@@ -23,6 +23,7 @@ public interface ITmdbServiceRedis
     Task GenerateCsvFromRedisHash(string fileName);
     Task SaveJsonToRedisHash();
     Task<List<MovieStringSimpleDto>> GetRecommendations(int id);
+    Task<List<MovieStringSimpleDto>> GetRecommendations(List<int> ids);
     Task<List<MovieStringSimpleDto>> GetFavorites(int userId);
     Task<bool> MovieExists(int id);
 }
@@ -347,6 +348,46 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         return movieStringSimpleDtoList;
 
     }
+    
+    public async Task<List<MovieStringSimpleDto>> GetRecommendations(List<int> ids)
+    {
+        var key = "recommendations";
+        var db = _connectionMultiplexer.GetDatabase();
+        
+        var recommendationsJson = db.HashGet(key, ids.Select(x => (RedisValue)x).ToArray());
+        
+        if (!recommendationsJson.Any()) return new List<MovieStringSimpleDto>();
+        
+        var recommendations = recommendationsJson
+            .Select(recommendation => JsonConvert.DeserializeObject<List<string>>(recommendation!))
+            .ToList();
+        
+        var movieIds = recommendations.SelectMany(x => x).Distinct();
+        
+        var moviesJson = await db.HashGetAsync("movies_hash", movieIds.Select(x => (RedisValue)x).ToArray());
+        
+        var genres = await GetGenresFromRedis();
+        
+        var movieSimpleDtoList = moviesJson
+            .Select(movieJson => JsonConvert.DeserializeObject<MovieSimpleDto>(movieJson!))
+            .ToList();
+        
+        var movieFullDtoList = movieSimpleDtoList
+            .Select(movieSimpleDto => new MovieFullDto(movieSimpleDto!, genres))
+            .ToList();
+        
+        var movieStringSimpleDtoList = movieFullDtoList
+            .Select(movieFullDto => new MovieStringSimpleDto(movieFullDto, _tmdbConfiguration.CurrentValue.ImageBaseUrl))
+            .ToList();
+        
+        //randomize order
+        var random = new Random();
+        
+        movieStringSimpleDtoList = movieStringSimpleDtoList.OrderBy(x => random.Next()).ToList();
+        
+        return movieStringSimpleDtoList;
+    }
+    
     
     public async Task<List<MovieStringSimpleDto>> GetFavorites(int userId)
     {
