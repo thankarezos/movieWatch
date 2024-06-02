@@ -48,7 +48,7 @@ public class MoviesController : ControllerBase
     public async Task<ApiResponse<List<MovieStringSimpleDto>>> GetFavorites()
     {
         var user = HttpContext.Items["User"] as User;
-        return await _movieService.GetFavorites(user!.Id);
+        return new ApiResponse<List<MovieStringSimpleDto>>(await _movieService.GetFavorites(user!.Id));
     }
     
     [Authorization(UserType.Admin, UserType.User)]

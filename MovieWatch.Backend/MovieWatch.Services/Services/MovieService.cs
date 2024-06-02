@@ -10,8 +10,8 @@ namespace MovieWatch.Services.Services;
 public interface IMovieService
 {
     Task<MoviesStringSimpleDto?> GetMovies(int page = 1, int pageSize = 20, string? titleFilter = null);
-    Task<ApiResponse<List<MovieStringSimpleDto>>?> GetFavorites(int userId);
-    Task<ApiResponse> AddFavorites(int userId, List<int> movieIds);
+    Task<List<MovieStringSimpleDto>?> GetFavorites(int userId);
+    Task AddFavorites(int userId, List<int> movieIds);
     
 }
 
@@ -38,13 +38,12 @@ public class MovieService : IMovieService
             : new MoviesStringSimpleDto(await _tmdbServiceRedis.SearchMoviesByTitleAsync(titleFilter, page, pageSize), imageBaseUrl);
     }
     
-    public async Task<ApiResponse<List<MovieStringSimpleDto>>?> GetFavorites(int userId)
+    public async Task<List<MovieStringSimpleDto>?> GetFavorites(int userId)
     {
-        var movies = await _tmdbServiceRedis.GetFavorites(userId);
-        return new ApiResponse<List<MovieStringSimpleDto>>(movies);
+        return await _tmdbServiceRedis.GetFavorites(userId);
     }
     
-    public async Task<ApiResponse> AddFavorites(int userId, List<int> movieIds)
+    public async Task AddFavorites(int userId, List<int> movieIds)
     {
         var user = await _dbContext.Users.FindAsync(userId);
         
@@ -52,10 +51,12 @@ public class MovieService : IMovieService
         {
             if (!await _tmdbServiceRedis.MovieExists(movieId)) continue;
             if (user?.FavoriteMovies == null) user!.FavoriteMovies = new List<int>();
+            //check if movie already exists in favorites
+            if (user.FavoriteMovies.Contains(movieId)) continue;
+            
             user.FavoriteMovies!.Add(movieId);
             await _dbContext.SaveChangesAsync();
         }
-        
-        return new ApiResponse();
     }
+
 }
