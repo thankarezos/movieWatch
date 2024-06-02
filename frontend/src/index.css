@@ -18,11 +18,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #a9aeff;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2fb;
+  color: #535bf2;
 }
 
 body {
@@ -31,6 +31,9 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  /* background-image: url("./assets/collage5.jpg");
+  background-repeat: repeat;
+  height: fit-content; */
 }
 
 h1 {
@@ -74,7 +77,7 @@ button:focus-visible {
 /* ------------------------------------ Background ------------------------------------ */
 
 .bg-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   height: 100%;
@@ -92,16 +95,64 @@ button:focus-visible {
 /* ------------------------------------ Main ------------------------------------ */
 
 .title {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  top: -30px;
   font-family: 'Jaro','Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-size: 4rem;
   text-shadow: 2px 2px 5px rgba(219, 0, 0, 0.815);
+  user-select: none;
+}
+
+.header {
+  position: fixed;
+  top: 0px;
+  height: 100px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px 12px 12px;
+  /* border-bottom: 10px solid rgba(0, 0, 0, 0.05); */
+  background: linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(0, 0, 0, 0.512) 10%, rgba(0,0,0,0.6634628851540616) 25%);
+  z-index: 100;
+}
+
+.card.body {
+  background-color: #1a1a1a;
+}
+
+/* ------------------------------------ Pagination ------------------------------------ */
+
+
+
+.find-btn:hover {
+  background-color: #fffafa !important;
+  color: #920000 !important;
+  border-color: #920000 !important;
+}
+
+.ant-spin-dot i {
+  background-color: rgb(255, 0, 0) !important; /* Using !important to override default styles */
 }
 
 
+/* ------------------------------------ Card ------------------------------------ */
 
-/* ------------------------------------ Main ------------------------------------ */
+.checked {
+  position: absolute;
+  height: 300px;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+}
 
+.hide-icon {
+  display: none;
+}
+
+.show-icon {
+  position: absolute;
+  margin: auto;
+  margin-top: -35px;
+  margin-left: 15px;
+  font-size: 40px;
+}
