@@ -20,6 +20,7 @@ public interface ITmdbServiceRedis
     Task<MoviesFullDto> SearchMoviesByTitleAsync(string titleFilter, int page, int pageSize);
     Task GenerateCsvFromRedisHash(string fileName);
     Task SaveJsonToRedisHash();
+    Task<List<MovieStringSimpleDto>> GetRecommendations(int id);
 }
 
 public class TmdbServiceRedis : ITmdbServiceRedis
@@ -27,14 +28,16 @@ public class TmdbServiceRedis : ITmdbServiceRedis
     private readonly IConnectionMultiplexer _connectionMultiplexer;
     private readonly ITmdbService _tmdbService;
     private readonly IOptionsMonitor<PyhtonConfiguration> _pyhtonConfiguration;
+    private readonly IOptionsMonitor<TmbdConfiguration> _tmdbConfiguration;
     private readonly ILogger<TmdbServiceRedis> _logger;
 
-    public TmdbServiceRedis(IConnectionMultiplexer connectionMultiplexer, ITmdbService tmdbService, ILogger<TmdbServiceRedis> logger, IOptionsMonitor<PyhtonConfiguration> pyhtonConfiguration)
+    public TmdbServiceRedis(IConnectionMultiplexer connectionMultiplexer, ITmdbService tmdbService, ILogger<TmdbServiceRedis> logger, IOptionsMonitor<PyhtonConfiguration> pyhtonConfiguration, IOptionsMonitor<TmbdConfiguration> tmdbConfiguration)
     {
         _connectionMultiplexer = connectionMultiplexer;
         _tmdbService = tmdbService;
         _logger = logger;
         _pyhtonConfiguration = pyhtonConfiguration;
+        _tmdbConfiguration = tmdbConfiguration;
     }
     
     public async Task SaveGenresToRedis()
@@ -301,5 +304,36 @@ public class TmdbServiceRedis : ITmdbServiceRedis
             var movieJson = JsonConvert.SerializeObject(recommendations.Keys);
             await db.HashSetAsync(key, movieKey, movieJson);
         }
+    }
+    
+    public async Task<List<MovieStringSimpleDto>> GetRecommendations(int id)
+    {
+        var key = "recommendations";
+        var db = _connectionMultiplexer.GetDatabase();
+        
+        var recommendationsJson = db.HashGet(key, id);
+        
+        if (!recommendationsJson.HasValue) return new List<MovieStringSimpleDto>();
+        
+        var recommendations = JsonConvert.DeserializeObject<List<string>>(recommendationsJson!);
+        
+        var moviesJson = await db.HashGetAsync("movies_hash", recommendations!.Select(x => (RedisValue)x).ToArray());
+        
+        var genres = await GetGenresFromRedis();
+        
+        var movieSimpleDtoList = moviesJson
+            .Select(movieJson => JsonConvert.DeserializeObject<MovieSimpleDto>(movieJson!))
+            .ToList();
+        
+        var movieFullDtoList = movieSimpleDtoList
+            .Select(movieSimpleDto => new MovieFullDto(movieSimpleDto!, genres))
+            .ToList();
+        
+        var movieStringSimpleDtoList = movieFullDtoList
+            .Select(movieFullDto => new MovieStringSimpleDto(movieFullDto, _tmdbConfiguration.CurrentValue.ImageBaseUrl))
+            .ToList();
+        
+        return movieStringSimpleDtoList;
+
     }
 }

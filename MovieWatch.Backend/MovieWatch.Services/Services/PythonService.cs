@@ -38,7 +38,7 @@ public class PythonService : IPythonService
         var args = new List<string>
         {
             $"--input \"{input}\"",
-            "--col-weights Title:0.5 Description:0.2 Genres:0.3",
+            "--col-weights Title:0.2 Description:0.3 Genres:0.5",
             "--max-returned 10",
             $"--output \"{output}\""
         };

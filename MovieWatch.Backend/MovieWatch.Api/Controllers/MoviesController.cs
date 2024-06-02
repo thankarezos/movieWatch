@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MovieWatch.Data.Common;
 using MovieWatch.Data.Dtos;
+using MovieWatch.Data.Dtos.MovieDtos;
 using MovieWatch.Data.Pld;
 using MovieWatch.Services.Services;
 
@@ -70,5 +71,12 @@ public class MoviesController
         await _pythonService.RunScript(cancellationToken);
         await _tmdbServiceRedis.SaveJsonToRedisHash();
         return new ApiResponse();
+    }
+    
+    [HttpGet("Reco/{id}")]
+    public async Task<ApiResponse<List<MovieStringSimpleDto>>> Reco(int id)
+    {
+        var movies = await _tmdbServiceRedis.GetRecommendations(id);
+        return new ApiResponse<List<MovieStringSimpleDto>>(movies);
     }
 }
