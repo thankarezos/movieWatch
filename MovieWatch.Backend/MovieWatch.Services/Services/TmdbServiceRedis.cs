@@ -26,6 +26,7 @@ public interface ITmdbServiceRedis
     Task<List<MovieStringSimpleDto>> GetRecommendations(List<int> ids);
     Task<List<MovieStringSimpleDto>> GetFavorites(int userId);
     Task<bool> MovieExists(int id);
+    Task<List<string?>> GetTrailers(int movieId);
 }
 
 public class TmdbServiceRedis : ITmdbServiceRedis
@@ -424,6 +425,25 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         var db = _connectionMultiplexer.GetDatabase();
         return await db.HashExistsAsync("movies_hash", id);
     }
-    
-    
+
+    public async Task<List<string?>> GetTrailers(int movieId)
+    {
+        var db = _connectionMultiplexer.GetDatabase();
+        //check if trailers are already in redis
+        var trailers = await db.HashGetAsync("trailers", movieId);
+        if(trailers.HasValue) return JsonConvert.DeserializeObject<List<string>>(trailers!);
+        
+        var trailersList = await _tmdbService.GetTrailers(movieId);
+        if (trailersList == null) return [];
+        
+        var trailersJson = JsonConvert.SerializeObject(trailersList);
+        await db.HashSetAsync("trailers", movieId, trailersJson);
+        
+        //add youtube url to trailers
+        trailersList = trailersList.Select(x => $"https://www.youtube.com/watch?v={x}").ToList();
+
+        return trailersList.ToList();
+
+    }
+
 }

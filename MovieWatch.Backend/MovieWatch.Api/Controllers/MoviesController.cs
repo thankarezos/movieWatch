@@ -36,15 +36,14 @@ public class MoviesController : ControllerBase
         return new ApiResponse<MoviesStringSimpleDto>(movies);
     }
     
-    [HttpGet("GetTrailers")]
-    public async Task<ApiResponse> GetTrailers()
+    [HttpGet("Trailers/{movieId}", Name = "GetTrailers")]
+    public async Task<ApiResponse<IEnumerable<string?>?>> GetTrailers(int movieId)
     {
-        // await _tmdbServiceRedis.GetTrailers();
-        return new ApiResponse();
+        return new ApiResponse<IEnumerable<string?>?>(await _tmdbServiceRedis.GetTrailers(movieId));
     }
     
     [Authorization(UserType.Admin, UserType.User)]
-    [HttpGet("favorites", Name = "GetFavorites")]
+    [HttpGet("Favorites", Name = "GetFavorites")]
     public async Task<ApiResponse<List<MovieStringSimpleDto>>> GetFavorites()
     {
         var user = HttpContext.Items["User"] as User;
@@ -52,7 +51,7 @@ public class MoviesController : ControllerBase
     }
     
     [Authorization(UserType.Admin, UserType.User)]
-    [HttpPost("favorites", Name = "AddFavorite")]
+    [HttpPost("Favorites", Name = "AddFavorite")]
     public async Task<ApiResponse> AddFavorite([FromBody] AddFavoritePld pld)
     {
         var validationResult = await _validationService.ValidatePldAsync<AddFavoritePld, ApiResponse>(pld);
@@ -71,7 +70,7 @@ public class MoviesController : ControllerBase
     }
     
     [Authorization(UserType.Admin)]
-    [HttpGet("FetchMoviesFromTmdb")]
+    [HttpGet("FetchFromTmdb")]
     public async Task<ApiResponse> FetchMovies([FromQuery] int fromPage, [FromQuery] int toPage, CancellationToken cancellationToken)
     {
         await _tmdbServiceRedis.SaveGenresToRedis();
