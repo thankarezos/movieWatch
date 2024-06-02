@@ -192,6 +192,7 @@ public class TmdbServiceRedis : ITmdbServiceRedis
     {
         var db = _connectionMultiplexer.GetDatabase();
         var indexName = "movies_index";
+        await db.ExecuteAsync("FT.CONFIG", "SET", "MINPREFIX", "1");
         
         var moviesJson = await db.HashGetAsync("movies_hash", db.HashKeys("movies_hash"));
         
@@ -226,7 +227,7 @@ public class TmdbServiceRedis : ITmdbServiceRedis
             if (await client.GetDocumentAsync($"movie:{movie.Id}") != null) continue;
             
             var doc = new Document($"movie:{movie.Id}");
-            doc.Set("title", movie.Title);
+            doc.Set("title", movie.Title.ToLower());
             await client.AddDocumentAsync(doc);
         }
     }
