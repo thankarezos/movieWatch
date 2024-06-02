@@ -36,8 +36,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: movie_watch_backend
-    ports:
-      - "5224:8080"
     networks:
       - movieWatch
     volumes:
@@ -47,6 +45,25 @@ services:
     depends_on:
       - db
       - redis
+    profiles:
+      - prod
+  
+  nginx:
+    container_name: movie_watch_nginx
+    image: nginx:1.21.3
+    restart: unless-stopped
+    ports:
+      - "8282:80"
+    environment:
+      - REACT_APP_API_BASE_URL=http://backend/REACT_APP_API_BASE_URL
+      - NODE_ENV=production
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+      - ./frontend/dist:/usr/share/nginx/html
+    networks:
+      - movieWatch
+    depends_on:
+      - backend
     profiles:
       - prod
 
