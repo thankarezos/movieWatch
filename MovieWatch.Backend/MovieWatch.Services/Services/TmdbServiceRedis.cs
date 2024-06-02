@@ -133,6 +133,8 @@ public class TmdbServiceRedis : ITmdbServiceRedis
 
     public async Task<MoviesFullDto> SearchMoviesByTitleAsync(string titleFilter, int page, int pageSize)
     {
+        titleFilter = titleFilter.ToLower().Trim();
+        
         var db = _connectionMultiplexer.GetDatabase();
         var indexName = "movies_index";
         var client = new Client(indexName, db);
@@ -196,18 +198,36 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         var movies = moviesJson.Select(movieJson => JsonConvert.DeserializeObject<MovieSimpleDto>(movieJson!)).ToList();
         
         var client = new Client(indexName, db);
-
-        var schema = new Schema()
-            .AddTextField("title");
         
-        client.CreateIndex(schema, new Client.ConfiguredIndexOptions());
+        var schema = new Schema()
+            .AddTextField("title", 1.0)
+            .AddSortableNumericField("popularity")
+            .AddTagField("genres");
+
+        var options = new Client.ConfiguredIndexOptions()
+            .SetNoStopwords();
+        
+        //if index exists do alter instead of create
+        try
+        {
+            await client.CreateIndexAsync(schema, options);
+        }
+        catch (Exception e)
+        {
+            if (!e.Message.Contains("Index already exists")) 
+                _logger.LogError(e, "Skipping index creation");
+        }
+        
         
         foreach (var movie in movies)
         {
             if (movie == null) continue;
+            //if document already exists do not add it again
+            if (await client.GetDocumentAsync($"movie:{movie.Id}") != null) continue;
+            
             var doc = new Document($"movie:{movie.Id}");
             doc.Set("title", movie.Title);
-            client.AddDocument(doc);
+            await client.AddDocumentAsync(doc);
         }
     }
 }

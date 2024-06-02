@@ -28,11 +28,18 @@ public class MoviesController
         if (validationResult != null) return validationResult;
         var movies = await _movieService.GetMovies(pld.Page, pld.PageSize, pld.TitleFilter);
         return new ApiResponse<MoviesStringSimpleDto>(movies);
-
     }
     
+    [HttpGet("GetTrailers")]
+    public async Task<ApiResponse> GetTrailers()
+    {
+        // await _tmdbServiceRedis.GetTrailers();
+        return new ApiResponse();
+    }
+    
+    
     [HttpGet("FetchMoviesFromTmdb")]
-    public async Task<ApiResponse> Index([FromQuery] int fromPage, [FromQuery] int toPage, CancellationToken cancellationToken)
+    public async Task<ApiResponse> FetchMovies([FromQuery] int fromPage, [FromQuery] int toPage, CancellationToken cancellationToken)
     {
         await _tmdbServiceRedis.SaveGenresToRedis();
         await _tmdbServiceRedis.AddMoviesToRedisSortedSet(fromPage, toPage, cancellationToken);
