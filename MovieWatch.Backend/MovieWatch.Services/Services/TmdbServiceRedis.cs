@@ -247,13 +247,13 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         // Retrieve all hash entries
         var hashEntries = await db.HashGetAllAsync(hashKey);
         var movies = hashEntries
-            .Select(entry => JsonConvert.DeserializeObject<MovieSimpleDto>(entry.Value))
+            .Select(entry => JsonConvert.DeserializeObject<MovieSimpleDto>(entry.Value!))
             .ToList();
         var genres = await GetGenresFromRedis();
         
         // Convert to MovieFullDto
         var moviesFull = movies
-            .Select(movie => new MovieFullDto(movie, genres))
+            .Select(movie => new MovieFullDto(movie!, genres))
             .ToList();
         
         //write only id, title, description, genres
