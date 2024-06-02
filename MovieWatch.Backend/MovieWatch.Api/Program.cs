@@ -70,6 +70,17 @@ builder.Services.Configure<TmbdConfiguration>(builder.Configuration.GetSection("
 builder.Services.Configure<PyhtonConfiguration>(builder.Configuration.GetSection("Python"));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 
 ValidatorOptions.Global.PropertyNameResolver = CamelCasePropertyNameResolver.ResolvePropertyName;
 
@@ -95,6 +106,9 @@ if (!app.Environment.IsDevelopment())
     
 
 }
+
+app.UseCors("AllowLocalhost");
+
 
 app.UseHttpsRedirection();
 
