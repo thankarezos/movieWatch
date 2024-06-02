@@ -12,6 +12,7 @@ services:
       - ./redis-data/:/data
     profiles:
       - dev
+      - prod
     environment:
       REDIS_ARGS: "--save 60 1000 --appendonly yes"
 
@@ -28,6 +29,26 @@ services:
       - movieWatch
     profiles:
       - dev
+      - prod
+      
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movie_watch_backend
+    ports:
+      - "5224:8080"
+    networks:
+      - movieWatch
+    volumes:
+      - ./MovieWatch.Backend/MovieWatch.Api/bin/Release/net8.0/linux-x64/publish:/App
+      - ./MovieWatch.Backend/storage:/storage
+      - ./MovieWatch.Backend/python:/python
+    depends_on:
+      - db
+      - redis
+    profiles:
+      - prod
 
   pgadmin:
     container_name: movie_watch_pgadmin
