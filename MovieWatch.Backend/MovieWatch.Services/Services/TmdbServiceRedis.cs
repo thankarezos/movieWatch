@@ -1,8 +1,10 @@
 using CsvHelper;
 using CsvHelper.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MovieWatch.Data.Configurations;
+using MovieWatch.Data.Database;
 using MovieWatch.Data.Dtos;
 using MovieWatch.Data.Dtos.MovieDtos;
 using Newtonsoft.Json;
@@ -21,6 +23,8 @@ public interface ITmdbServiceRedis
     Task GenerateCsvFromRedisHash(string fileName);
     Task SaveJsonToRedisHash();
     Task<List<MovieStringSimpleDto>> GetRecommendations(int id);
+    Task<List<MovieStringSimpleDto>> GetFavorites(int userId);
+    Task<bool> MovieExists(int id);
 }
 
 public class TmdbServiceRedis : ITmdbServiceRedis
@@ -30,14 +34,21 @@ public class TmdbServiceRedis : ITmdbServiceRedis
     private readonly IOptionsMonitor<PyhtonConfiguration> _pyhtonConfiguration;
     private readonly IOptionsMonitor<TmbdConfiguration> _tmdbConfiguration;
     private readonly ILogger<TmdbServiceRedis> _logger;
+    private readonly MovieWatchDbContext _dbContext;
 
-    public TmdbServiceRedis(IConnectionMultiplexer connectionMultiplexer, ITmdbService tmdbService, ILogger<TmdbServiceRedis> logger, IOptionsMonitor<PyhtonConfiguration> pyhtonConfiguration, IOptionsMonitor<TmbdConfiguration> tmdbConfiguration)
+    public TmdbServiceRedis(IConnectionMultiplexer connectionMultiplexer, 
+        ITmdbService tmdbService, 
+        ILogger<TmdbServiceRedis> logger, 
+        IOptionsMonitor<PyhtonConfiguration> pyhtonConfiguration, 
+        IOptionsMonitor<TmbdConfiguration> tmdbConfiguration,
+        MovieWatchDbContext dbContext)
     {
         _connectionMultiplexer = connectionMultiplexer;
         _tmdbService = tmdbService;
         _logger = logger;
         _pyhtonConfiguration = pyhtonConfiguration;
         _tmdbConfiguration = tmdbConfiguration;
+        _dbContext = dbContext;
     }
     
     public async Task SaveGenresToRedis()
@@ -336,4 +347,42 @@ public class TmdbServiceRedis : ITmdbServiceRedis
         return movieStringSimpleDtoList;
 
     }
+    
+    public async Task<List<MovieStringSimpleDto>> GetFavorites(int userId)
+    {
+        var favoriteIds = await _dbContext.Users
+            .Where(x => x.Id == userId)
+            .Select(x => x.FavoriteMovies)
+            .FirstOrDefaultAsync();
+        
+        if (favoriteIds == null) return new List<MovieStringSimpleDto>();
+        
+        var db = _connectionMultiplexer.GetDatabase();
+        var moviesJson = await db.HashGetAsync("movies_hash", favoriteIds.Select(x => (RedisValue)x).ToArray());
+        
+        var genres = await GetGenresFromRedis();
+        
+        var movieSimpleDtoList = moviesJson
+            .Select(movieJson => JsonConvert.DeserializeObject<MovieSimpleDto>(movieJson!))
+            .ToList();
+        
+        var movieFullDtoList = movieSimpleDtoList
+            .Select(movieSimpleDto => new MovieFullDto(movieSimpleDto!, genres))
+            .ToList();
+        
+        var movieStringSimpleDtoList = movieFullDtoList
+            .Select(movieFullDto => new MovieStringSimpleDto(movieFullDto, _tmdbConfiguration.CurrentValue.ImageBaseUrl))
+            .ToList();
+        
+        return movieStringSimpleDtoList;
+        
+    }
+    
+    public async Task<bool> MovieExists(int id)
+    {
+        var db = _connectionMultiplexer.GetDatabase();
+        return await db.HashExistsAsync("movies_hash", id);
+    }
+    
+    
 }

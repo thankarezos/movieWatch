@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using MovieWatch.Api.Filters;
 using MovieWatch.Data.Common;
+using MovieWatch.Data.Constants;
 using MovieWatch.Data.Dtos;
 using MovieWatch.Data.Dtos.MovieDtos;
+using MovieWatch.Data.Models;
 using MovieWatch.Data.Pld;
 using MovieWatch.Services.Services;
 
@@ -9,7 +12,7 @@ namespace MovieWatch.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class MoviesController
+public class MoviesController : ControllerBase
 {
     private readonly IMovieService _movieService;
     private readonly IValidationService _validationService;
@@ -23,7 +26,7 @@ public class MoviesController
         _tmdbServiceRedis = tmdbServiceRedis;
         _pythonService = pythonService;
     }
-
+    
     [HttpGet(Name = "GetMovies")]
     public async Task<ApiResponse<MoviesStringSimpleDto>?> Get([FromQuery] GetMoviesPld pld)
     {
@@ -40,7 +43,26 @@ public class MoviesController
         return new ApiResponse();
     }
     
+    [Authorization(UserType.Admin, UserType.User)]
+    [HttpGet("favorites", Name = "GetFavorites")]
+    public async Task<ApiResponse<List<MovieStringSimpleDto>>> GetFavorites()
+    {
+        var user = HttpContext.Items["User"] as User;
+        return await _movieService.GetFavorites(user!.Id);
+    }
     
+    [Authorization(UserType.Admin, UserType.User)]
+    [HttpPost("favorites", Name = "AddFavorite")]
+    public async Task<ApiResponse> AddFavorite([FromBody] AddFavoritePld pld)
+    {
+        var validationResult = await _validationService.ValidatePldAsync<AddFavoritePld, ApiResponse>(pld);
+        if (validationResult != null) return validationResult;
+        var user = HttpContext.Items["User"] as User;
+        await _movieService.AddFavorites(user!.Id, pld.MovieIds);
+        return new ApiResponse();
+    }
+    
+    [Authorization(UserType.Admin)]
     [HttpGet("Csv")]
     public async Task<ApiResponse> Csv()
     {
@@ -48,7 +70,7 @@ public class MoviesController
         return new ApiResponse();
     }
     
-    
+    [Authorization(UserType.Admin)]
     [HttpGet("FetchMoviesFromTmdb")]
     public async Task<ApiResponse> FetchMovies([FromQuery] int fromPage, [FromQuery] int toPage, CancellationToken cancellationToken)
     {
@@ -57,6 +79,7 @@ public class MoviesController
         return new ApiResponse();
     }
     
+    [Authorization(UserType.Admin)]
     [HttpGet("Index")]
     public async Task<ApiResponse> Index()
     {
@@ -64,6 +87,7 @@ public class MoviesController
         return new ApiResponse();
     }
     
+    [Authorization(UserType.Admin)]
     [HttpGet("Python")]
     public async Task<ApiResponse> Python(CancellationToken cancellationToken)
     {
@@ -73,6 +97,7 @@ public class MoviesController
         return new ApiResponse();
     }
     
+    [Authorization(UserType.Admin)]
     [HttpGet("Reco/{id}")]
     public async Task<ApiResponse<List<MovieStringSimpleDto>>> Reco(int id)
     {
