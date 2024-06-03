@@ -70,6 +70,7 @@ function Home() {
       <Header />
       <div style={{display: "flex", justifyContent: "center", alignItems: "center", width: "99vw", height: "90vh"}}>
         {hasChosen ? <Results noRefresh={true}  
+                        title={activeMovie.title}
                         id={activeMovie.id}
                         banner={activeMovie.banner} 
                         poster={activeMovie.poster}
