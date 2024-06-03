@@ -16,7 +16,7 @@ function Home() {
     // if(reset){
     //     setHasChosen(false);
     // }
-
+    const [activeMovie, setActiveMovie] = useState(null);
     const [movies, setMovies] = useState([]);
     const [name, setName] = useState("User");
 
@@ -32,7 +32,12 @@ function Home() {
             return {
                 id: movie.id,
                 title: movie.title,
-                poster: movie.imageUrl
+                poster: movie.imageUrl,
+                banner: movie.bannerUrl,
+                desc: movie.description,
+                year: movie.year,
+                rating: movie.rating,
+                genres: movie.genres,
             };
         });
         setMovies(newMovies);
@@ -43,24 +48,37 @@ function Home() {
 
     const removeMovie = async (id) => {
         const payload = {
-            movieId: [
+            movieIds: [
                 id
             ]
         }
-        const response = await apiService.post("/Movies/RemoveFavorites", payload);
-        console.log(response);
+        await apiService.post("/Movies/RemoveFavorite", payload);
         fetchProfile();
     }
     
     const handleFavButton = (movie) => {
+        console.log(movie);
         removeMovie(movie.id);
+    }
+
+    const handleMovieClick = (movie) => {
+        
+        setHasChosen(true);
+        setActiveMovie(movie);
     }
   return (
     <>
       <Background />
       <Header />
       <div style={{display: "flex", justifyContent: "center", alignItems: "center", width: "99vw", height: "90vh"}}>
-        {hasChosen ? <Results noRefresh={true} /> : <div
+        {hasChosen ? <Results noRefresh={true}  
+                        id={activeMovie.id}
+                        banner={activeMovie.banner} 
+                        poster={activeMovie.poster}
+                        desc={activeMovie.desc}
+                        year={activeMovie.year} 
+                        rating={activeMovie.rating} 
+                        genre={activeMovie.genres}/> : <div
             style={{
             backgroundColor: "rgba(0, 0, 0, 0.9)",
             width: "1250px",
@@ -105,7 +123,7 @@ function Home() {
             {movies.map((movie) => (
             <div
             key={movie.id}
-            onClick={() => setHasChosen(true)}
+            onClick={() => handleMovieClick(movie)}
                 style={{
                 position: "relative",
                 display: "flex",
@@ -116,7 +134,7 @@ function Home() {
                 }}
             >
                 <MovieCard title={movie.title} poster={movie.poster} />
-                <FontAwesomeIcon icon={faBookmark} className="fav-btn" onClick={() => handleFavButton(movie)} style={{zIndex: 10000}}/>
+                <FontAwesomeIcon icon={faBookmark} className="fav-btn" onClick={(e) => {handleFavButton(movie); e.stopPropagation();}} style={{zIndex: 10000}}/>
             </div>
             ))}
         </div>}
