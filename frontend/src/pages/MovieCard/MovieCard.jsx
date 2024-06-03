@@ -11,6 +11,7 @@ import {
 import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 // import Profile from "../Profile/Profile"
 import { useState } from "react";
+import propTypes from "prop-types";
 
 
 function MovieCard({
@@ -25,6 +26,7 @@ function MovieCard({
   isOverview,
   refreshPick,
   noRefresh,
+  onClick,
 }) {
 
   const [isFave, setIsFave] = useState(false);
@@ -46,6 +48,7 @@ function MovieCard({
       backgroundColor: "rgba(255, 255, 255, 0)",
       border: "0px solid",
     }}
+    onClick={onClick}
   >
     <Space style={{ display: "flex", flexDirection: "row", margin: "-10px" }}>
       <div>
@@ -102,16 +105,18 @@ function MovieCard({
 
 
 MovieCard.propTypes = {
-  poster: String,
-  title: String,
-  rating: String,
-  genre: Array,
-  year: String,
-  desc: String,
-  link: String,
-  size: Number,
-  isOverview: Boolean,
-  refreshPick: Function,
-  noRefresh: Boolean,
+  poster: propTypes.string,
+  title: propTypes.string,
+  rating: propTypes.number,
+  genre: propTypes.array,
+  year: propTypes.number,
+  desc: propTypes.string,
+  link: propTypes.string,
+  size: propTypes.number,
+  isOverview: propTypes.bool,
+  refreshPick: propTypes.func,
+  noRefresh: propTypes.bool,
+  onClick: propTypes.func
+
 };
 export default MovieCard;

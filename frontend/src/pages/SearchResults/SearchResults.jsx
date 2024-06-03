@@ -6,7 +6,7 @@ import Background from '../Background/Background';
 import apiService from '../../ApiService';
 import PropTypes from "prop-types";
 
-const SearchMovies = ({setIsDone}) => {
+const SearchMovies = ({setIsDone, setCheckedMovies}) => {
 
     const [movies, setMovies] = useState([]);
 
@@ -91,7 +91,13 @@ const SearchMovies = ({setIsDone}) => {
             alert("You need to choose 5 movies!");
             return; // Prevent checking more than 5
         }
-        setIsDone(true);
+        console.log("Find Movies");
+        setIsDone();
+        console.log("Checked Movies: ", movies.filter(movie => movie.isChecked));
+
+        const ids = movies.filter(movie => movie.isChecked).map(movie => movie.id);
+
+        setCheckedMovies(ids);
     }
 
     return (
@@ -130,7 +136,8 @@ const SearchMovies = ({setIsDone}) => {
 };
 
 SearchMovies.propTypes = {
-    setIsDone: PropTypes.func.isRequired
+    setIsDone: PropTypes.func.isRequired,
+    setCheckedMovies: PropTypes.func.isRequired
   };
 
 export default SearchMovies;

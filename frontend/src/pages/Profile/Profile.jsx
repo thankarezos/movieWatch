@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import "../../App.css";
 import Background from "../Background/Background";
 import Header from "../Header/Header";
-import SearchResults from "../SearchResults/SearchResults";
 import Results from "../Results/Results";
 import { Typography } from "antd";
 import MovieCard from "../MovieCard/MovieCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
 import apiService from "../../ApiService";
 
 function Home() {

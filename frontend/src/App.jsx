@@ -22,6 +22,9 @@ function Main() {
     if (localStorage.getItem("token") === null && sessionStorage.getItem("token") === null && location.pathname !== "/register") {
       navigate("/");
     }
+    if ((localStorage.getItem("token") !== null || sessionStorage.getItem("token") !== null) && location.pathname === "/") {
+      navigate("/home");
+    }
   }, [navigate, location.pathname]);
 
   return (

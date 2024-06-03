@@ -5,7 +5,6 @@ import Background from "../Background/Background";
 import MovieCard from "../MovieCard/MovieCard";
 import PropTypes from "prop-types";
 import apiService from "../../ApiService";
-import { useNavigate } from "react-router-dom";
 
 function Results({
   id,
@@ -20,16 +19,13 @@ function Results({
   noRefresh,
 }) {
   const [isVisible] = useState(true); // Make this true when the results are ready
-  const [trailer, setTrailer] = useState(null);
-  const navigate = useNavigate();
 
   const getTrailer = async () => {
     const response = await apiService.get("/Movies/Trailers/" + id);
 
-    console.log(response.data.data[0]);
+    const trailer = response.data.data[0];
 
-    setTrailer(response.data.data[0]);
-    navigate(trailer);
+    window.open(trailer, '_blank')
   }
 
   // const refreshPick = () => {
