@@ -122,10 +122,10 @@ const SearchMovies = ({setIsDone, setCheckedMovies}) => {
     }
 
     return (
-        <div style={{ marginTop: "100px",}}>
+        <div style={{ marginTop: "200px",}}>
             <Background />
                 <Left checkedMoviesArray={checkedMoviesArray} toggleMovieCheck={toggleMovieCheck} buttonHandler={buttonHandler}/>
-                <div style={{ backgroundColor: "rgba(0, 0, 0, 0.9)", width: "1250px", height: "fit-content", position: "relative", left: "0px", top: "178px", transform: "translate(14%)", display: "flex", flexFlow: "row wrap", borderRadius: "10px", padding: "15px", boxShadow: "2px 2px 2px 2px black"}}>
+                <div style={{ backgroundColor: "rgba(0, 0, 0, 0.9)", width: "1050px", height: "fit-content", position: "relative", left: "0px", top: "178px", transform: "translate(24%)", display: "flex", flexFlow: "row wrap", borderRadius: "10px", padding: "15px", boxShadow: "2px 2px 2px 2px black"}}>
                     <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "1200px", padding: "0px 10px"}}>
                         <Typography.Title level={3} style={{color: "white", backgroundColor: "rgba(0, 0, 0, 0.2)", borderRadius: "20px", padding: "8px", margin: "0px 0px 30px 0px"}}>
                             Choose 5 movies you like:

@@ -69,6 +69,7 @@ function Home() {
         <div style={{display: "flex", justifyContent: "center", alignItems: "center", width: "99vw", height: "90vh"}}>
           {isDone? <Results
                         refreshPick={refreshPick}
+                        title={activeMovie.title}
                         id={activeMovie.id}
                         banner={activeMovie.banner} 
                         poster={activeMovie.poster}
