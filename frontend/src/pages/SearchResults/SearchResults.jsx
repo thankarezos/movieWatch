@@ -18,7 +18,7 @@ const SearchMovies = ({setIsDone, setCheckedMovies}) => {
       }, []);
 
     const fetchMovies = async () => {
-    const response = await apiService.get("/Movies?Page=1&PageSize=5");
+    const response = await apiService.get("/Movies?Page=1&PageSize=15");
         const movies = response.data.data.movies;
         const newMovies = movies.map((movie) => {
             return {
@@ -31,7 +31,7 @@ const SearchMovies = ({setIsDone, setCheckedMovies}) => {
     };
 
     const fetchMoviesWithString = async (searchTerm) => {
-        const response = await apiService.get("/Movies?Page=1&PageSize=5&TitleFilter=" + searchTerm);
+        const response = await apiService.get("/Movies?Page=1&PageSize=15&TitleFilter=" + searchTerm);
             const movies = response.data.data.movies;
             const newMovies = movies.map((movie) => {
                 return {
@@ -107,7 +107,7 @@ const SearchMovies = ({setIsDone, setCheckedMovies}) => {
     };
 
     const buttonHandler = () => {
-        const countChecked = movies.filter(movie => movie.isChecked).length;
+        const countChecked = checkedMoviesArray.length;
         if (countChecked < 5) {
             alert("You need to choose 5 movies!");
             return; // Prevent checking more than 5
@@ -116,7 +116,7 @@ const SearchMovies = ({setIsDone, setCheckedMovies}) => {
         setIsDone();
         console.log("Checked Movies: ", movies.filter(movie => movie.isChecked));
 
-        const ids = movies.filter(movie => movie.isChecked).map(movie => movie.id);
+        const ids = checkedMoviesArray.map(movie => movie.id);
 
         setCheckedMovies(ids);
     }
