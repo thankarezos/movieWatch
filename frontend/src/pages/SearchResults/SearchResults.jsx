@@ -16,7 +16,7 @@ const SearchMovies = ({setIsDone, setCheckedMovies}) => {
       }, []);
 
     const fetchMovies = async () => {
-    const response = await apiService.get("/Movies?Page=1&PageSize=20");
+    const response = await apiService.get("/Movies?Page=1&PageSize=15");
         const movies = response.data.data.movies;
         const newMovies = movies.map((movie) => {
             return {

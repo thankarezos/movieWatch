@@ -12,21 +12,22 @@ import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 // import Profile from "../Profile/Profile"
 import { useState } from "react";
 import propTypes from "prop-types";
+import apiService from "../../ApiService";
 
 
 function MovieCard({
+  id,
   poster,
   title,
   rating,
   genre,
   year,
   desc,
-  link,
   size,
   isOverview,
   refreshPick,
   noRefresh,
-  onClick,
+  customOnClick,
 }) {
 
   const [isFave, setIsFave] = useState(false);
@@ -39,6 +40,30 @@ function MovieCard({
 
   const handleFavButton = () => {
     setIsFave(!isFave);
+    if(isFave){
+      removeMovie(id);
+    }
+    else{
+      AddFavoriteMovie(id);
+    }
+  }
+
+  const AddFavoriteMovie = async (id) => {
+    const payload = {
+        movieIds: [
+            id
+        ]
+    }
+    await apiService.post("/Movies/favorites", payload);
+  }
+
+  const removeMovie = async (id) => {
+    const payload = {
+        movieIds: [
+            id
+        ]
+    }
+    await apiService.post("/Movies/RemoveFavorite", payload);
   }
 
   if(isOverview){
@@ -48,7 +73,7 @@ function MovieCard({
       backgroundColor: "rgba(255, 255, 255, 0)",
       border: "0px solid",
     }}
-    onClick={onClick}
+    
   >
     <Space style={{ display: "flex", flexDirection: "row", margin: "-10px" }}>
       <div>
@@ -68,7 +93,7 @@ function MovieCard({
         </div>
         <Typography.Title level={4} style={{color: "white", textTransform: "capitalize", margin: "0px 0px 20px 0px"}}>Genre: {genre.join(', ')}</Typography.Title>
         <Typography.Text style={{color: "white", fontSize: "18px"}}>{desc}</Typography.Text>
-        <a href={link} target="_blank" rel="noreferrer" style={{fontSize: "20px", marginTop: "20px"}}><FontAwesomeIcon icon={faClapperboard} style={{marginRight: "5px"}}/> Watch Trailer</a>
+        <a onClick={customOnClick} target="_blank" rel="noreferrer" style={{fontSize: "20px", marginTop: "20px"}}><FontAwesomeIcon icon={faClapperboard} style={{marginRight: "5px"}}/> Watch Trailer</a>
       </div>
       <Button onClick={buttonHandler} className="find-btn" style={{position: "absolute", bottom: "0px", right: "0px", margin: "10px", fontWeight: "600", fontSize: "15px", height: "fit-content", display: dontRefresh ? "none" : "block"}}><FontAwesomeIcon icon={faDice} style={{marginRight: "7px", fontSize: "20px"}}/>Refresh<FontAwesomeIcon icon={faDice} style={{marginLeft: "7px", fontSize: "20px"}}/></Button>
       <FontAwesomeIcon icon={isFave ? faBookmark : farBookmark} className="fav-btn" onClick={() => handleFavButton()}/>
@@ -105,18 +130,18 @@ function MovieCard({
 
 
 MovieCard.propTypes = {
+  id: propTypes.number,
   poster: propTypes.string,
   title: propTypes.string,
   rating: propTypes.number,
   genre: propTypes.array,
   year: propTypes.number,
   desc: propTypes.string,
-  link: propTypes.string,
   size: propTypes.number,
   isOverview: propTypes.bool,
   refreshPick: propTypes.func,
   noRefresh: propTypes.bool,
-  onClick: propTypes.func
+  customOnClick: propTypes.func,
 
 };
 export default MovieCard;

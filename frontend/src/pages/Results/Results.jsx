@@ -62,6 +62,7 @@ function Results({
           }}
         >
           <MovieCard
+            id={id}
             noRefresh={dontRefresh}
             refreshPick={refreshPick}
             isOverview={true}
@@ -73,7 +74,7 @@ function Results({
             desc={
               desc
             }
-            onClick={getTrailer}
+            customOnClick={getTrailer}
           />
         </div>
       </Flex>
