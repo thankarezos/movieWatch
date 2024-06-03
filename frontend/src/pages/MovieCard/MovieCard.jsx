@@ -89,13 +89,13 @@ function MovieCard({
         </Typography.Title>
         <div style={{width: "300px", display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
           <Typography.Title level={3} style={{color: "white", margin: "0px 0px 20px 0px"}}><FontAwesomeIcon icon={faCalendarDays} style={{marginRight: "10px"}}/>{year}</Typography.Title>
-          <Typography.Title level={3} style={{color: "white", margin: "0px 0px 20px 0px"}}><FontAwesomeIcon icon={faStar} style={{marginRight: "10px", color: "#FFD700"}}/>{rating}/10</Typography.Title>
+          <Typography.Title level={3} style={{color: "white", margin: "0px 0px 20px 0px"}}><FontAwesomeIcon icon={faStar} style={{marginRight: "10px", color: "#FFD700"}}/>{rating}</Typography.Title>
         </div>
         <Typography.Title level={4} style={{color: "white", textTransform: "capitalize", margin: "0px 0px 20px 0px"}}>Genre: {genre.join(', ')}</Typography.Title>
         <Typography.Text style={{color: "white", fontSize: "18px"}}>{desc}</Typography.Text>
         <a onClick={customOnClick} target="_blank" rel="noreferrer" style={{fontSize: "20px", marginTop: "20px"}}><FontAwesomeIcon icon={faClapperboard} style={{marginRight: "5px"}}/> Watch Trailer</a>
       </div>
-      <Button onClick={buttonHandler} className="find-btn" style={{position: "absolute", bottom: "0px", right: "0px", margin: "10px", fontWeight: "600", fontSize: "15px", height: "fit-content", display: dontRefresh ? "none" : "block"}}><FontAwesomeIcon icon={faDice} style={{marginRight: "7px", fontSize: "20px"}}/>Refresh<FontAwesomeIcon icon={faDice} style={{marginLeft: "7px", fontSize: "20px"}}/></Button>
+      <Button onClick={buttonHandler} className="find-btn" style={{position: "absolute", bottom: "0px", right: "0px", margin: "10px", fontWeight: "600", fontSize: "20px", height: "fit-content", display: dontRefresh ? "none" : "block"}}><FontAwesomeIcon icon={faDice} style={{marginRight: "7px", fontSize: "20px"}}/>Refresh<FontAwesomeIcon icon={faDice} style={{marginLeft: "7px", fontSize: "20px"}}/></Button>
       <FontAwesomeIcon icon={isFave ? faBookmark : farBookmark} className="fav-btn" onClick={() => handleFavButton()}/>
     </Space>
   </Card>

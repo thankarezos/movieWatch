@@ -54,7 +54,7 @@ const Register = () => {
   };
 
   return (
-    <div style={{height: "fit-content", width: "fit-content", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", width: "100vw"}}>
+    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "90vh", width: "90vw"}}>
         <p className="title">MovieMatch</p>
         <Typography.Title style={{ marginBottom: "40px", color: "white" }} >Register</Typography.Title>
         <Form

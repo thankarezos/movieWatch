@@ -45,8 +45,8 @@ const Login = () => {
     };
   
     return (
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", width: "100vw"}}>
-        <p className="title">MovieMatch</p>
+      <div style={{paddingLeft: "50px" ,display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "85vh", width: "90vw"}}>
+        <p className="title" style={{marginTop: "0px"}}>MovieMatch</p>
         <Typography.Title style={{marginBottom: "40px", color: "white"}}>Login</Typography.Title>
           <Form
           style={{width: '250px', height: '500px', margin: 'auto'}}

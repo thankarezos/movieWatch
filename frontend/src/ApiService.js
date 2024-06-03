@@ -1,7 +1,7 @@
 // src/services/apiService.js
 import axios from 'axios';
 
-const API_BASE_URL = (import.meta.env.MODE === 'production' ? "/api" : 'http://localhost:5224');
+const API_BASE_URL = (import.meta.env.MODE === 'production' ? "/api" : 'https://moviewatch.thankarezos.com/api/');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
