@@ -61,6 +61,17 @@ public class MoviesController : ControllerBase
         return new ApiResponse();
     }
     
+    [Authorization(UserType.Admin, UserType.User)]
+    [HttpPost("RemoveFavorite", Name = "RemoveFavorite")]
+    public async Task<ApiResponse> RemoveFavorite([FromBody] AddFavoritePld pld)
+    {
+        var validationResult = await _validationService.ValidatePldAsync<AddFavoritePld, ApiResponse>(pld);
+        if (validationResult != null) return validationResult;
+        var user = HttpContext.Items["User"] as User;
+        await _movieService.RemoveFavorites(user!.Id, pld.MovieIds);
+        return new ApiResponse();
+    }
+    
     [Authorization(UserType.Admin)]
     [HttpGet("Csv")]
     public async Task<ApiResponse> Csv()

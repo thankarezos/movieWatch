@@ -9,6 +9,7 @@ import MovieCard from "../MovieCard/MovieCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import apiService from "../../ApiService";
 
 function Home() {
     const [hasChosen, setHasChosen] = useState(false);
@@ -16,39 +17,43 @@ function Home() {
     //     setHasChosen(false);
     // }
 
+    const [movies, setMovies] = useState([]);
+    const [name, setName] = useState("User");
+
+    useEffect(() => {
+        // Fetch data immediately when component mounts
+        fetchProfile();
+      }, []);
+
+    const fetchProfile = async () => {
+    const response = await apiService.get("/User/profile");
+        const movies = response.data.data.favorites;
+        const newMovies = movies.map((movie) => {
+            return {
+                id: movie.id,
+                title: movie.title,
+                poster: movie.imageUrl
+            };
+        });
+        setMovies(newMovies);
+        setName(response.data.data.username);
+    };
+
     // Sample data
-    const movies = [
-        { id: 1, title: "Inception", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 2, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 3, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 4, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 5, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 6, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 7, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 8, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 9, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 10, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 11, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 12, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 13, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 14, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 15, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-    ];
 
-    const [fav, setFav] = useState([1, 2, 3, 4, 7, 8, 9, 13, 14, 15]);
-
-    
-    
-    const name = "Nick"
+    const removeMovie = async (id) => {
+        const payload = {
+            movieId: [
+                id
+            ]
+        }
+        const response = await apiService.post("/Movies/RemoveFavorites", payload);
+        console.log(response);
+        fetchProfile();
+    }
     
     const handleFavButton = (movie) => {
-        setFav(prevFav => {
-            if (prevFav.includes(movie.id)) {
-                return prevFav.filter(id => id !== movie.id);
-            } else {
-                return [...prevFav, movie.id];
-            }
-        });
+        removeMovie(movie.id);
     }
   return (
     <>
@@ -97,7 +102,7 @@ function Home() {
                 Here are your favorite movies:
             </Typography.Title>
             </div>
-            {movies.filter(movie => fav.includes(movie.id)).map((movie) => (
+            {movies.map((movie) => (
             <div
             key={movie.id}
             onClick={() => setHasChosen(true)}
@@ -111,7 +116,7 @@ function Home() {
                 }}
             >
                 <MovieCard title={movie.title} poster={movie.poster} />
-                <FontAwesomeIcon icon={faBookmark} className="fav-btn" onClick={() => handleFavButton(movie)}/>
+                <FontAwesomeIcon icon={faBookmark} className="fav-btn" onClick={() => handleFavButton(movie)} style={{zIndex: 10000}}/>
             </div>
             ))}
         </div>}

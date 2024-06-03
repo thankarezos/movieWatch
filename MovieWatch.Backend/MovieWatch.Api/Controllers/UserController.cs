@@ -1,10 +1,12 @@
 using FluentValidation.Results;
 using MetroClimate.Data.Dtos.Payload;
 using Microsoft.AspNetCore.Mvc;
+using MovieWatch.Api.Filters;
 using MovieWatch.Data.Common;
 using MovieWatch.Data.Constants;
 using MovieWatch.Data.Database;
 using MovieWatch.Data.Dtos;
+using MovieWatch.Data.Models;
 using MovieWatch.Data.Pld;
 using MovieWatch.Data.Response;
 using MovieWatch.Services.Services;
@@ -17,11 +19,13 @@ public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly IValidationService _validationService;
+    private readonly IMovieService _movieService;
     
-    public UserController(IUserService userService, IValidationService validationService)
+    public UserController(IUserService userService, IValidationService validationService, IMovieService movieService)
     {
         _userService = userService;
         _validationService = validationService;
+        _movieService = movieService;
     }
     [HttpPost("login")]
     public async Task<ApiResponse<LoginResponse>> Login([FromBody] LoginPld loginPld)
@@ -72,6 +76,22 @@ public class UserController : ControllerBase
             Token = token!,
             User = userDto
         });
+    }
+    [Authorization(UserType.Admin, UserType.User)]
+    [HttpGet("profile")]
+    public async Task<ApiResponse<ProfileResponse>> GetProfile()
+    {
+        
+        var user = HttpContext.Items["User"] as User;
+        var favorites = await _movieService.GetFavorites(user!.Id);
+        var userResponse = new ProfileResponse
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Favorites = favorites
+        };
+        return new ApiResponse<ProfileResponse>(userResponse);
     }
     
 }

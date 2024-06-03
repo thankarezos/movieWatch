@@ -12,6 +12,7 @@ public interface IMovieService
     Task<MoviesStringSimpleDto?> GetMovies(int page = 1, int pageSize = 20, string? titleFilter = null);
     Task<List<MovieStringSimpleDto>?> GetFavorites(int userId);
     Task AddFavorites(int userId, List<int> movieIds);
+    Task RemoveFavorites(int userId, List<int> movieIds);
     
 }
 
@@ -55,6 +56,19 @@ public class MovieService : IMovieService
             if (user.FavoriteMovies.Contains(movieId)) continue;
             
             user.FavoriteMovies!.Add(movieId);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+    
+    public async Task RemoveFavorites(int userId, List<int> movieIds)
+    {
+        var user = await _dbContext.Users.FindAsync(userId);
+        
+        foreach (var movieId in movieIds)
+        {
+            if (!await _tmdbServiceRedis.MovieExists(movieId)) continue;
+            if (user?.FavoriteMovies == null) continue;
+            user.FavoriteMovies!.Remove(movieId);
             await _dbContext.SaveChangesAsync();
         }
     }

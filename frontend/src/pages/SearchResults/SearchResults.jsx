@@ -77,6 +77,7 @@ const SearchMovies = ({setIsDone}) => {
         setFilteredMovies(filtered);
         const newPageMovies = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
         setCurrentMovies(newPageMovies);
+        console.log(currentMovies);
     };
 
     const handleSearch = (event) => {

@@ -7,10 +7,10 @@ import {
   faDice,
   faClapperboard
 } from "@fortawesome/free-solid-svg-icons";
-import { faYoutube } from '@fortawesome/free-brands-svg-icons';
+// import { faYoutube } from '@fortawesome/free-brands-svg-icons';
 import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
-import Profile from "../Profile/Profile"
-import { useEffect, useState } from "react";
+// import Profile from "../Profile/Profile"
+import { useState } from "react";
 
 
 function MovieCard({
