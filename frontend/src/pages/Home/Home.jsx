@@ -1,6 +1,5 @@
 import { useState } from "react";
 import "../../App.css";
-import Background from "../Background/Background";
 import Header from "../Header/Header";
 import SearchResults from "../SearchResults/SearchResults";
 import Results from "../Results/Results"

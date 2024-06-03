@@ -89,7 +89,7 @@ function MovieCard({
               preview={false}
             />
           </div>
-          <Typography.Title level={4} style={{ textTransform: "capitalize", marginTop: "10px", marginBottom: "0px", color: "white" }}>
+          <Typography.Title level={4} style={{ textTransform: "capitalize", marginTop: "10px", marginBottom: "0px", color: "white", textWrap: "wrap" }}>
             {title}
           </Typography.Title>
         </Space>
@@ -100,4 +100,18 @@ function MovieCard({
 
 }
 
+
+MovieCard.propTypes = {
+  poster: String,
+  title: String,
+  rating: String,
+  genre: Array,
+  year: String,
+  desc: String,
+  link: String,
+  size: Number,
+  isOverview: Boolean,
+  refreshPick: Function,
+  noRefresh: Boolean,
+};
 export default MovieCard;

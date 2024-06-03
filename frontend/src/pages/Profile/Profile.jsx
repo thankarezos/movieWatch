@@ -10,9 +10,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
-function Home(reset) {
+function Home() {
     const [hasChosen, setHasChosen] = useState(false);
-
     // if(reset){
     //     setHasChosen(false);
     // }
