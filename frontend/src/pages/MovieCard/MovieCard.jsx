@@ -89,7 +89,7 @@ function MovieCard({
               preview={false}
             />
           </div>
-          <Typography.Title level={4} style={{ textTransform: "capitalize", marginTop: "10px", marginBottom: "0px", color: "white", textWrap: "wrap" }}>
+          <Typography.Title level={4} style={{ textTransform: "capitalize", marginTop: "10px", marginBottom: "0px", color: "white", textWrap: "wrap", maxWidth: "160px" }}>
             {title}
           </Typography.Title>
         </Space>
