@@ -1,2 +1,5 @@
 **/bin/
 **/obj/
+**/redis-data
+**/.venv/
+**/storage/

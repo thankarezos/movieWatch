@@ -1,24 +1,33 @@
 import { useState } from "react";
 import "../../App.css";
-import { Flex, Spin } from "antd"
+import { Flex, Spin } from "antd";
 import Background from "../Background/Background";
 import MovieCard from "../MovieCard/MovieCard";
+import PropTypes from "prop-types";
+import apiService from "../../ApiService";
 
-function Results(
-  {poster,
+function Results({
+  id,
+  poster,
   title,
+  banner,
   rating,
   genre,
   year,
   desc,
-  link,
-  size,
-  isOverview,
   refreshPick,
-  noRefresh}
-) {
-  const [isVisible, setIsVisible] = useState(true); // Make this true when the results are ready
-  
+  noRefresh,
+}) {
+  const [isVisible] = useState(true); // Make this true when the results are ready
+
+  const getTrailer = async () => {
+    const response = await apiService.get("/Movies/Trailers/" + id);
+
+    const trailer = response.data.data[0];
+
+    window.open(trailer, '_blank')
+  }
+
   // const refreshPick = () => {
   //   console.log("Refreshed!");
   // }
@@ -26,17 +35,67 @@ function Results(
   const dontRefresh = !!noRefresh;
 
   return (
-      <div>
-      <Background banner={"https://images-ext-1.discordapp.net/external/PZo3ITEUI-5yyGfuJp0wwkQ5vWOP8iBbeycfUCYKiEU/https/image.tmdb.org/t/p/original/8Qsr8pvDL3s1jNZQ4HK1d1Xlvnh.jpg"}/>
-      <Spin size="large" style={{backgroundColor: "rgba(0,0,0,0.8)", padding: "15px", borderRadius: "50px", zIndex: "-100", position: "absolute", display: isVisible ? "none" : "block"}} />
-      <Flex align="center" gap="middle" style={{position: "relative"}}>
-        
-        <div style={{ backgroundColor: "rgba(0, 0, 0, 0.9)", width: "1250px", height: "600px", display: isVisible ? "flex" : "none", flexFlow: "row wrap", borderRadius: "10px", padding: "15px", boxShadow: "2px 2px 2px 2px black"}}>
-          <MovieCard noRefresh={dontRefresh} refreshPick={refreshPick} isOverview={true} title={"Fantastic Beasts"} year={2024} rating={7.1} genre={["action", "comedy"]} poster={"https://image.tmdb.org/t/p/original/h6NYfVUyM6CDURtZSnBpz647Ldd.jpg"} desc={"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."} link={"https://www.youtube.com/watch?v=xvBUgdKUz5g&t=1193s"}/>
+    <div>
+      <Background banner={banner} />
+      <Spin
+        size="large"
+        style={{
+          backgroundColor: "rgba(0,0,0,0.8)",
+          padding: "15px",
+          borderRadius: "50px",
+          zIndex: "-100",
+          position: "absolute",
+          display: isVisible ? "none" : "block",
+        }}
+      />
+      <Flex align="center" gap="middle" style={{ position: "relative" }}>
+        <div
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.9)",
+            width: "1250px",
+            height: "600px",
+            display: isVisible ? "flex" : "none",
+            flexFlow: "row wrap",
+            borderRadius: "10px",
+            padding: "15px",
+            boxShadow: "2px 2px 2px 2px black",
+          }}
+        >
+          <MovieCard
+            id={id}
+            noRefresh={dontRefresh}
+            refreshPick={refreshPick}
+            isOverview={true}
+            title={title}
+            year={year}
+            rating={rating}
+            genre={genre}
+            poster={poster}
+            desc={
+              desc
+            }
+            customOnClick={getTrailer}
+          />
         </div>
       </Flex>
-      </div>
+    </div>
   );
 }
+
+Results.propTypes = {
+  id: PropTypes.number,
+  poster: PropTypes.string,
+  banner: PropTypes.string,
+  title: PropTypes.string,
+  rating: PropTypes.number,
+  genre: PropTypes.array,
+  year: PropTypes.number,
+  desc: PropTypes.string,
+  link: PropTypes.string,
+  size: PropTypes.number,
+  isOverview: PropTypes.bool,
+  refreshPick: PropTypes.func,
+  noRefresh: PropTypes.bool,
+};
 
 export default Results;

@@ -2,61 +2,81 @@ import { useEffect, useState } from "react";
 import "../../App.css";
 import Background from "../Background/Background";
 import Header from "../Header/Header";
-import SearchResults from "../SearchResults/SearchResults";
 import Results from "../Results/Results";
 import { Typography } from "antd";
 import MovieCard from "../MovieCard/MovieCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+import apiService from "../../ApiService";
 
-function Home(reset) {
+function Home() {
     const [hasChosen, setHasChosen] = useState(false);
-
     // if(reset){
     //     setHasChosen(false);
     // }
+    const [activeMovie, setActiveMovie] = useState(null);
+    const [movies, setMovies] = useState([]);
+    const [name, setName] = useState("User");
+
+    useEffect(() => {
+        // Fetch data immediately when component mounts
+        fetchProfile();
+      }, []);
+
+    const fetchProfile = async () => {
+    const response = await apiService.get("/User/profile");
+        const movies = response.data.data.favorites;
+        const newMovies = movies.map((movie) => {
+            return {
+                id: movie.id,
+                title: movie.title,
+                poster: movie.imageUrl,
+                banner: movie.bannerUrl,
+                desc: movie.description,
+                year: movie.year,
+                rating: movie.rating,
+                genres: movie.genres,
+            };
+        });
+        setMovies(newMovies);
+        setName(response.data.data.username);
+    };
 
     // Sample data
-    const movies = [
-        { id: 1, title: "Inception", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 2, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 3, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 4, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 5, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 6, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 7, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 8, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 9, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 10, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 11, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 12, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 13, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 14, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-        { id: 15, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2"},
-    ];
 
-    const [fav, setFav] = useState([1, 2, 3, 4, 7, 8, 9, 13, 14, 15]);
-
-    
-    
-    const name = "Nick"
+    const removeMovie = async (id) => {
+        const payload = {
+            movieIds: [
+                id
+            ]
+        }
+        await apiService.post("/Movies/RemoveFavorite", payload);
+        fetchProfile();
+    }
     
     const handleFavButton = (movie) => {
-        setFav(prevFav => {
-            if (prevFav.includes(movie.id)) {
-                return prevFav.filter(id => id !== movie.id);
-            } else {
-                return [...prevFav, movie.id];
-            }
-        });
+        console.log(movie);
+        removeMovie(movie.id);
+    }
+
+    const handleMovieClick = (movie) => {
+        
+        setHasChosen(true);
+        setActiveMovie(movie);
     }
   return (
     <>
       <Background />
       <Header />
       <div style={{display: "flex", justifyContent: "center", alignItems: "center", width: "99vw", height: "90vh"}}>
-        {hasChosen ? <Results noRefresh={true} /> : <div
+        {hasChosen ? <Results noRefresh={true}  
+                        id={activeMovie.id}
+                        banner={activeMovie.banner} 
+                        poster={activeMovie.poster}
+                        desc={activeMovie.desc}
+                        year={activeMovie.year} 
+                        rating={activeMovie.rating} 
+                        genre={activeMovie.genres}/> : <div
             style={{
             backgroundColor: "rgba(0, 0, 0, 0.9)",
             width: "1250px",
@@ -98,10 +118,10 @@ function Home(reset) {
                 Here are your favorite movies:
             </Typography.Title>
             </div>
-            {movies.filter(movie => fav.includes(movie.id)).map((movie) => (
+            {movies.map((movie) => (
             <div
             key={movie.id}
-            onClick={() => setHasChosen(true)}
+            onClick={() => handleMovieClick(movie)}
                 style={{
                 position: "relative",
                 display: "flex",
@@ -112,7 +132,7 @@ function Home(reset) {
                 }}
             >
                 <MovieCard title={movie.title} poster={movie.poster} />
-                <FontAwesomeIcon icon={faBookmark} className="fav-btn" onClick={() => handleFavButton(movie)}/>
+                <FontAwesomeIcon icon={faBookmark} className="fav-btn" onClick={(e) => {handleFavButton(movie); e.stopPropagation();}} style={{zIndex: 10000}}/>
             </div>
             ))}
         </div>}

@@ -1,31 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Input, Typography } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons'
 import MovieCard from '../MovieCard/MovieCard';
 import Background from '../Background/Background';
+import apiService from '../../ApiService';
+import PropTypes from "prop-types";
 
-const SearchMovies = ({setIsDone}) => {
+const SearchMovies = ({setIsDone, setCheckedMovies}) => {
+
+    const [movies, setMovies] = useState([]);
+
+    useEffect(() => {
+        // Fetch data immediately when component mounts
+        fetchMovies();
+      }, []);
+
+    const fetchMovies = async () => {
+    const response = await apiService.get("/Movies?Page=1&PageSize=15");
+        const movies = response.data.data.movies;
+        const newMovies = movies.map((movie) => {
+            return {
+                id: movie.id,
+                title: movie.title,
+                poster: movie.imageUrl
+            };
+        });
+        setMovies(newMovies);
+    };
+
     // Sample data
-    const initialMovies = [
-        { id: 1, title: "Inception", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 2, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 3, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 4, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 5, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 6, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 7, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 8, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 9, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 10, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 11, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 12, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 13, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: false },
-        { id: 14, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: true },
-        { id: 15, title: "Interstellar", poster: "https://cdn11.bigcommerce.com/s-b72t4x/images/stencil/1280x1280/products/52630/56493/ST4568__76069.1624841046.jpg?c=2", isChecked: true },
-    ];
-
     
-    const [movies, setMovies] = useState(initialMovies);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
@@ -72,6 +77,7 @@ const SearchMovies = ({setIsDone}) => {
         setFilteredMovies(filtered);
         const newPageMovies = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
         setCurrentMovies(newPageMovies);
+        console.log(currentMovies);
     };
 
     const handleSearch = (event) => {
@@ -85,7 +91,13 @@ const SearchMovies = ({setIsDone}) => {
             alert("You need to choose 5 movies!");
             return; // Prevent checking more than 5
         }
-        setIsDone(true);
+        console.log("Find Movies");
+        setIsDone();
+        console.log("Checked Movies: ", movies.filter(movie => movie.isChecked));
+
+        const ids = movies.filter(movie => movie.isChecked).map(movie => movie.id);
+
+        setCheckedMovies(ids);
     }
 
     return (
@@ -122,5 +134,10 @@ const SearchMovies = ({setIsDone}) => {
         </div>
     );
 };
+
+SearchMovies.propTypes = {
+    setIsDone: PropTypes.func.isRequired,
+    setCheckedMovies: PropTypes.func.isRequired
+  };
 
 export default SearchMovies;

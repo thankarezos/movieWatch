@@ -8,8 +8,13 @@ services:
       - "8381:8001"
     networks:
       - movieWatch
+    volumes:
+      - ./redis-data/:/data
     profiles:
       - dev
+      - prod
+    environment:
+      REDIS_ARGS: "--save 60 1000 --appendonly yes"
 
   db:
     container_name: movie_watch_db
@@ -24,6 +29,43 @@ services:
       - movieWatch
     profiles:
       - dev
+      - prod
+      
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movie_watch_backend
+    networks:
+      - movieWatch
+    volumes:
+      - ./MovieWatch.Backend/MovieWatch.Api/bin/Release/net8.0/linux-x64/publish:/App
+      - ./MovieWatch.Backend/storage:/storage
+      - ./MovieWatch.Backend/python:/python
+    depends_on:
+      - db
+      - redis
+    profiles:
+      - prod
+  
+  nginx:
+    container_name: movie_watch_nginx
+    image: nginx:1.21.3
+    restart: unless-stopped
+    ports:
+      - "8282:80"
+    environment:
+      - REACT_APP_API_BASE_URL=http://backend/REACT_APP_API_BASE_URL
+      - NODE_ENV=production
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+      - ./frontend/dist:/usr/share/nginx/html
+    networks:
+      - movieWatch
+    depends_on:
+      - backend
+    profiles:
+      - prod
 
   pgadmin:
     container_name: movie_watch_pgadmin
