@@ -24,6 +24,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("config/appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"config/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+
 builder.Services.AddDbContext<MovieWatchDbContext>(options =>
     options.UseNpgsql(connectionString: builder.Configuration.GetConnectionString(name: "DefaultConnection"),
             x => x.MigrationsHistoryTable(tableName: "migrations_history",
