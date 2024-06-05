@@ -1,0 +1,3 @@
+[submodule "MovieWatch.Backend/MovieWatch.Api/MovieWatch.Backend/MovieWatch.Api/config"]
+	path = MovieWatch.Backend/MovieWatch.Api/MovieWatch.Backend/MovieWatch.Api/config
+	url = https://github.com/thankarezos/MovieWatch.Appsettings.git
